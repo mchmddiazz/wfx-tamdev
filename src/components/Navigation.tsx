@@ -72,7 +72,7 @@ export default function Navigation() {
           >
             <motion.div className="h-full flex flex-col justify-center items-start px-8 pb-8">
               <div className="space-y-6 w-full">
-                {['intro', 'work', 'values', 'background', 'about', 'contact'].map(sec => (
+                {['intro', 'work', 'background', 'about', 'contact'].map(sec => (
                   <motion.a
                     key={sec}
                     href={`#${sec}`}
@@ -115,10 +115,10 @@ export default function Navigation() {
       >
         <div className="p-8 flex flex-col h-full">
           <a href="#intro" className="text-xl font-gambarino text-orange-600 dark:text-orange-600 hover:text-orange-800 dark:hover:text-orange-800 transition-colors tracking-tight leading-none">
-            N.
+            Tamdev.
           </a>
           <div className="flex-1 flex flex-col justify-center space-y-4">
-            {['intro', 'work', 'values', 'background', 'about', 'contact'].map(sec => (
+            {['intro', 'work', 'background', 'about', 'contact'].map(sec => (
               <motion.a
                 key={sec}
                 initial={{ x: -10, opacity: 0 }}
@@ -160,7 +160,7 @@ export default function Navigation() {
         className="lg:hidden fixed top-0 left-0 right-0 z-[101] flex items-center justify-between px-6 py-4 bg-gradient-to-b from-neutral-200 to-transparent dark:from-black dark:to-transparent"
       >
         <a href="#intro" className="text-xl font-gambarino text-orange-600 dark:text-orange-600 hover:text-orange-800 dark:hover:text-orange-800 transition-colors tracking-tight leading-none">
-          N.
+          Tamdev.
         </a>
         <div className="flex items-center space-x-4">
           <ThemeToggle />

@@ -14,12 +14,13 @@ export default function Hero() {
         className="flex flex-col items-start justify-center text-left max-w-5xl mx-auto"
       >
         <h1 className="font-gambarino text-[2.8rem] sm:text-6xl md:text-7xl leading-tight text-neutral-900 dark:text-white mb-8">
-          I code<span className="text-orange-600">.</span><br />
-          I design<span className="text-orange-600">.</span><br />
-          I adapt<span className="text-orange-600">.</span><br />
-          I create digital<br/>
-          experiences that<br/>
-          make sense<span className="text-orange-600">.</span>
+          Deploy<span className="text-orange-600">.</span><br />
+          Design<span className="text-orange-600">.</span><br />
+          Connect<span className="text-orange-600">.</span><br />
+          Engineering<br/>
+          functional digital<br/>
+          experiences that drive<br/>
+          real results<span className="text-orange-600">.</span>
         </h1>
       </motion.div>
     </section>

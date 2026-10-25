@@ -39,7 +39,7 @@ export default function About() {
             className="max-w-2xl text-sm sm:text-base font-mono text-justify leading-relaxed"
           >
             <p>
-              I'm a Computer Science student specializing in Cybersecurity, blending a passion for tech, design, and building real-world solutions. From developing a vulnerability assessment bot with UiPath and OpenAI, to managing the Cybersecurity Club's website and creating my portfolio at neelshha.com, I love projects that merge innovation with impact. I've led digital strategy as Joint General Secretary of my college's MUN Society and as CIO of Mumbai MUN. Skilled in React, Tailwind CSS, Python, and SQL, I'm driven by curiosity, creativity, and the challenge of turning ideas into meaningful digital experiences. Based in Mumbai, I believe thoughtful technology can change the world — one project at a time.
+              Computer Science / Software Engineering graduate and experienced Freelance Network Engineer with proven hands-on expertise in deploying enterprise SD-WAN for large-scale retail networks (PT Indomarco Prismatama). Successfully managed and led multi-phase network installations across Bandung Raya, Priangan Timur, Sumedang, and Sukabumi. Strong background in TCP/IP and Routing & Switching, with high field flexibility for ISP operations.
             </p>
           </motion.div>
         </div>

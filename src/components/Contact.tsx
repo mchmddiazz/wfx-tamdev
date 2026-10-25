@@ -4,19 +4,19 @@ export default function Contact() {
   const socialLinks = [
     {
       name: 'LinkedIn',
-      href: 'https://www.linkedin.com/in/neelshha',
+      href: 'https://www.linkedin.com/in/mochamad-dhias',
     },
     {
       name: 'GitHub',
-      href: 'https://www.github.com/neelshha',
+      href: 'https://www.github.com/mchmddiazz',
     },
     {
       name: 'Instagram',
-      href: 'https://www.instagram.com/neelshha/',
+      href: 'https://www.instagram.com/flowyourcode/',
     },
     {
       name: 'Email',
-      href: 'mailto:contact@neelshha.com',
+      href: 'mailto:mchmddiazz@gmail.com',
     },
   ];
 
@@ -69,7 +69,7 @@ export default function Contact() {
                     {link.name}
                   </span>
                   <span className="text-sm text-orange-600 dark:text-orange-600">
-                    {link.name === 'Email' ? 'contact@neelshha.com' : '@neelshha'}
+                    {link.name === 'Email' ? 'mchmddiazz@gmail.com' : '@mchmddiazz'}
                   </span>
                 </div>
                 <div className="absolute bottom-0 left-0 h-[1px] w-0 group-hover:w-full bg-neutral-600 dark:bg-neutral-600 transition-all duration-500" />
@@ -80,17 +80,7 @@ export default function Contact() {
 
         {/* 🔐 Glorified Secure Footer */}
 <div className="w-full mt-24 font-mono text-center px-4 text-xs sm:text-base text-neutral-500 dark:text-neutral-400 font-medium tracking-tight">
-  🔒&nbsp;
-  <a
-    href="https://securityheaders.com/?q=https://www.neelshha.com"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="View Security Headers verification report"
-    className="underline underline-offset-4 hover:text-orange-600 dark:hover:text-orange-600 transition-colors"
-  >
-    A+ Security Verified
-  </a>
-  &nbsp;·&nbsp;Built & secured by Neel Shah&nbsp;·&nbsp;© 2025
+  &nbsp;Build with Passion, Tamdev © 2026
 </div>
       </motion.div>
     </section>

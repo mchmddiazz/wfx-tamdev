@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 export function Loading({ setIsLoading }: { setIsLoading: (loading: boolean) => void }) {
-  const name = 'Tamdev*...';
+  const name = 'Tamdev*';
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
 
