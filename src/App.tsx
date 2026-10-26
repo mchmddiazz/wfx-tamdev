@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const Navigation = lazy(() => import('./components/Navigation'));
 const Hero       = lazy(() => import('./components/Hero'));
-const Work       = lazy(() => import('./components/Work'));
-const Background = lazy(() => import('./components/Background'));
 const About      = lazy(() => import('./components/About'));
+const Background = lazy(() => import('./components/Background'));
+const Work       = lazy(() => import('./components/Work'));
 const Contact    = lazy(() => import('./components/Contact'));
 
 export default function App() {
@@ -41,9 +41,9 @@ export default function App() {
               <Navigation />
               <main>
                 <Hero />
-                <Work />
-                <Background />
                 <About />
+                <Background />
+                <Work />
                 <Contact />
               </main>
             </motion.div>

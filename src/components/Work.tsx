@@ -1,5 +1,12 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+
+const projectImages = import.meta.glob<string>('../assets/img/*.webp', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+
 export default function Work() {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -14,43 +21,43 @@ export default function Work() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+
   const projects = [
     {
-      title: "Project One",
-      description: "A brief description of Project One, highlighting its main features and the problems it solves. This is a placeholder text.",
-      image: "https://picsum.photos/seed/project1/400/225",
-      technologies: ["React", "TypeScript", "Node.js", "GraphQL"],
+      title: "Easea.co",
+      description: "Optimized an existing website according to the agreed brief and design, focusing on speed improvements and minor bug fixes. Also handled configuration and integration of third-party applications as part of the agreed scope of work.",
+      image: projectImages['../assets/img/easea.webp'],
+      technologies: ["Shopify", "Liquid", "JavaScript"],
+      url: "https://easea.co",
     },
     {
-      title: "Project Two",
-      description: "A brief description of Project Two, highlighting its main features and the problems it solves. This is a placeholder text.",
-      image: "https://picsum.photos/seed/project2/400/225",
-      technologies: ["Next.js", "Tailwind CSS", "Prisma", "PostgreSQL"],
+      title: "Persebaya Store",
+      description: "Built custom product settings for jersey name-set personalization. Implemented a custom checkout flow to allow users to select their preferred jersey number and name, ensuring a seamless and personalized shopping experience.",
+      image: projectImages['../assets/img/persebaya.webp'],
+      technologies: ["Shopify", "Liquid", "JavaScript"],
+      url: "https://persebayastore.com",
     },
     {
-      title: "Project Three",
-      description: "A brief description of Project Three, highlighting its main features and the problems it solves. This is a placeholder text.",
-      image: "https://picsum.photos/seed/project3/400/225",
-      technologies: ["Vue", "Firebase", "SCSS"],
+      title: "Sonderlab",
+      description: "Redefine the brand's online presence with a custom Shopify theme, enhancing user experience, bug fixes, and implementing custom features to drive sales and engagement.",
+      image: projectImages['../assets/img/sonderlab.webp'],
+      technologies: ["Shopify", "Liquid", "JavaScript"],
+      url: "https://sonderlab.co",
     },
     {
-      title: "Project Four",
-      description: "A brief description of Project Four, highlighting its main features and the problems it solves. This is a placeholder text.",
-      image: "https://picsum.photos/seed/project4/400/225",
-      technologies: ["SvelteKit", "TypeScript", "tRPC"],
+      title: "WFX Telegram Bot (Private Project)",
+      description: "Developed a Telegram bot to automate and streamline user interactions, providing real-time updates and notifications. The bot leverages the Telegram API to enhance user for managing .session files, read messages, export data, and other functionalities.",
+      image: projectImages['../assets/img/wfx-tele.webp'],
+      technologies: ["Python", "Telethon", "Aiogram"],
+      url: "https://github.com/mchmddiazz/wfx-telegram-bot"
     },
     {
-      title: "Project Five",
-      description: "A brief description of Project Five, highlighting its main features and the problems it solves. This is a placeholder text.",
-      image: "https://picsum.photos/seed/project5/400/225",
-      technologies: ["Python", "Django", "Docker"],
-    },
-    {
-      title: "Project Six",
-      description: "A brief description of Project Six, highlighting its main features and the problems it solves. This is a placeholder text.",
-      image: "https://picsum.photos/seed/project6/400/225",
-      technologies: ["HTML", "CSS", "JavaScript"],
-    },
+      title: "Woodka Watch",
+      description: "Redefine the brand's online presence with a custom Shopify theme, enhancing user experience and driving sales with custom bundling features.",
+      image: projectImages['../assets/img/woodka.webp'],
+      technologies: ["Shopify", "Liquid", "JavaScript"],
+      url: "https://woodka.fun"
+    }
   ];
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -92,6 +99,10 @@ export default function Work() {
       <motion.div
         className="w-full max-w-6xl mx-auto"
       >
+        <h2 id="portfolio-title" className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-4 px-5 mt-8 md:mt-auto text-orange-600 dark:text-orange-600">PAST PROJECTS</h2>
+        <p className="mt-4 font-mono text-neutral-600 dark:text-neutral-400 text-sm sm:text-md mb-6 px-5 md:mt-auto ">
+            See some of the projects I've worked on, showcasing my skills in web development, design, and problem-solving. Each project reflects my commitment to creating functional and visually appealing digital experiences.
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-5 sm:gap-y-10 gap-y-14">
           {projects.map((project, index) => (
             <motion.div
@@ -139,6 +150,14 @@ export default function Work() {
                       </span>
                     ))}
                   </div>
+                  <a
+                    href={project.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-auto inline-flex w-fit items-center rounded-md bg-orange-600 px-4 py-2 font-mono text-sm text-white transition-colors hover:bg-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                  >
+                    View project
+                  </a>
                 </div>
               </div>
             </motion.div>
