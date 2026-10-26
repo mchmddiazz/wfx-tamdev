@@ -34,7 +34,7 @@ export default function Hero() {
         transition={{ duration: 0.8, ease: 'easeOut' }}
         className="flex flex-col items-start justify-center text-left max-w-5xl mx-auto"
       >
-        <h1 className="font-gambarino text-[2.3rem] md:text-[2.8rem] sm:text-6xl md:text-7xl leading-tight text-neutral-900 dark:text-white mb-8">
+        <h1 className="font-gambarino text-[2.5rem] sm:text-6xl md:text-6xl leading-tight text-neutral-900 dark:text-white mb-8">
           Design<span className="text-orange-600">.</span><br />
           Deploy<span className="text-orange-600">.</span><br />
           Connect<span className="text-orange-600">.</span><br />
