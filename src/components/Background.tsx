@@ -14,7 +14,7 @@ const anotherWorkExperiences = [
   {
     company: "PT. XLSmart Telecom Sejahtera (Legacy Smartfren)",
     role: "Sales Direct Selling Agent",
-    period: "Sep 2019 - Feb 2025",
+    period: "May 2025 - Jun 2026",
     description: "Experienced in intensive fieldwork, maintaining strong customer communication, and resolving on-site issues, while achieving top sales performance in the Andir and Sukajadi areas twice.",
   },
   {
