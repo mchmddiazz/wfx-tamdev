@@ -7,6 +7,12 @@ const workExperiences = [
     role: "Intern Network Engineer (SD-WAN Project)",
     period: "Sep 2026 - Now",
     description: "Installed, replaced, and configured SD-WAN hardware for Digiserve enterprise clients at PT Indomarco Prismatama retail sites, managing network deployment projects across Greater Bandung, Priangan Timur, Sumedang, and Sukabumi. Responsible for cable routing, labeling, server rack setup, and testing network connectivity and failover performance while collaborating with the central NOC team for remote device provisioning and creating accurate work completion reports.",
+  },
+  {
+    company: "Boleh Dicoba Digital",
+    role: "Web Developer",
+    period: "Sep 2019 - Feb 2025",
+    description: "Designing and customizing client e-commerce websites using Shopify and Liquid templates from brief to deployment, consistently optimizing page load performance to meet platform standards while redesigning interfaces based on Figma mockups, collaborating with design teams, resolving technical issues, and documenting troubleshooting procedures.",
   }
 ];
 
@@ -16,12 +22,6 @@ const anotherWorkExperiences = [
     role: "Sales Direct Selling Agent",
     period: "May 2025 - Jun 2026",
     description: "Experienced in intensive fieldwork, maintaining strong customer communication, and resolving on-site issues, while achieving top sales performance in the Andir and Sukajadi areas twice.",
-  },
-  {
-    company: "Boleh Dicoba Digital",
-    role: "Web Developer",
-    period: "Sep 2019 - Feb 2025",
-    description: "Designing and customizing client e-commerce websites using Shopify and Liquid templates from brief to deployment, consistently optimizing page load performance to meet platform standards while redesigning interfaces based on Figma mockups, collaborating with design teams, resolving technical issues, and documenting troubleshooting procedures.",
   }
 ];
 
