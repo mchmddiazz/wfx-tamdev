@@ -86,7 +86,6 @@ wfx-tamdev/
 ├── src/
 │   ├── assets/      # Media assets used in components
 │   ├── components/  # Reusable UI components
-│   ├── data/        # Static JSON/JS data for dynamic rendering
 │   ├── App.jsx/tsx  # Main Application component
 │   └── main.jsx/tsx # Entry point
 ├── index.html       # HTML entry template
