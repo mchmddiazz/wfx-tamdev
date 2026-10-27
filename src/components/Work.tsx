@@ -1,10 +1,8 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-// Import Swiper React components and modules
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 
-// Import Swiper styles
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -31,11 +29,18 @@ export default function Work() {
 
   const projects = [
     {
-      title: "Easea.co",
+      title: "Mario Minardi",
       description: "Optimized site performance, fixed legacy bugs, and integrated third-party applications to boost overall speed and user experience.",
-      image: projectImages["../assets/img/easea.webp"],
+      image: projectImages["../assets/img/mariominardi.webp"],
       technologies: ["Shopify", "Liquid", "JavaScript"],
-      url: "https://easea.co",
+      url: "https://mariominardi.com",
+    },
+    {
+      title: "Npure",
+      description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      image: projectImages["../assets/img/npure.webp"],
+      technologies: ["Shopify", "Liquid", "JavaScript"],
+      url: "https://npureofficial.id",
     },
     {
       title: "Persebaya Store",
@@ -57,6 +62,13 @@ export default function Work() {
       image: projectImages["../assets/img/woodka.webp"],
       technologies: ["Shopify", "Liquid", "JavaScript"],
       url: "https://woodka.fun",
+    },
+    {
+      title: "Easea.co",
+      description: "Optimized site performance, fixed legacy bugs, and integrated third-party applications to boost overall speed and user experience.",
+      image: projectImages["../assets/img/easea.webp"],
+      technologies: ["Shopify", "Liquid", "JavaScript"],
+      url: "https://easea.co",
     },
     {
       title: "WFX Telegram Bot (Private Project)",
