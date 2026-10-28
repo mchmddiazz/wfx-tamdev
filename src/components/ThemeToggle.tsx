@@ -12,7 +12,7 @@ export function ThemeToggle() {
       type="button"
       onClick={toggleTheme}
       style={{ rotate: rotation }}
-      className="p-2 rounded-lg text-orange-600 dark:text-orange-600 hover:text-orange-800 dark:hover:text-orange-800 transition-colors"
+      className="p-2 rounded-lg text-orange-600 dark:text-orange-600 hover:text-orange-800 dark:hover:text-orange-800 transition-colors cursor-pointer"
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
       aria-pressed={theme === 'dark'}
     >
