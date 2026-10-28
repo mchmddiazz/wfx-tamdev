@@ -13,6 +13,12 @@ const projectImages = import.meta.glob<string>("../assets/img/*.webp", {
   import: "default",
 });
 
+const iconImages = import.meta.glob<string>("../assets/icons/*.png", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+
 export default function Work() {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -29,17 +35,31 @@ export default function Work() {
 
   const projects = [
     {
+      title: "Green Rebel Foods",
+      description: "Implemented custom cart logic to alert customers when frozen and non-frozen items are mixed in the same shipment.",
+      image: projectImages["../assets/img/gr-foods.webp"],
+      technologies: ["Shopify", "Liquid", "JavaScript", "Cart.js", "Storefront API"],
+      url: "https://greenrebelfoods.com",
+    },
+    {
       title: "Mario Minardi",
       description: "Optimized site performance, fixed legacy bugs, adding new features, and integrated third-party applications to enhance user experience.",
       image: projectImages["../assets/img/mariominardi.webp"],
-      technologies: ["Shopify", "Liquid", "JavaScript"],
+      technologies: ["Shopify", "Liquid", "JavaScript", "Storefront API"],
       url: "https://mariominardi.com",
+    },
+    {
+      title: "Luma (ex Kasanoa)",
+      description: "Built a custom Shopify theme for a client, focusing on a clean and modern design to enhance user experience.",
+      image: projectImages["../assets/img/luma-ex-kasanoa.webp"],
+      technologies: ["Shopify", "Liquid", "JavaScript"],
+      url: "https://luma.id",
     },
     {
       title: "Persebaya Store",
       description: "Engineered custom jersey name-set personalization and tailored the checkout flow for a seamless customer purchasing experience.",
       image: projectImages["../assets/img/persebaya.webp"],
-      technologies: ["Shopify", "Liquid", "JavaScript"],
+      technologies: ["Shopify", "Liquid", "JavaScript", "Cart.js", "Storefront API"],
       url: "https://persebayastore.com",
     },
     {
@@ -53,7 +73,7 @@ export default function Work() {
       title: "Woodka Watch",
       description: "Created a custom Shopify theme with bespoke product bundling features to boost store conversion and average order value.",
       image: projectImages["../assets/img/woodka.webp"],
-      technologies: ["Shopify", "Liquid", "JavaScript"],
+      technologies: ["Shopify", "Liquid", "JavaScript", "Cart.js", "Storefront API"],
       url: "https://woodka.fun",
     },
     {
@@ -128,7 +148,10 @@ export default function Work() {
           modules={[Navigation, Pagination, Autoplay]}
           spaceBetween={20}
           slidesPerView={1}
-          navigation
+          navigation={{
+            prevEl: '.custom-prev',
+            nextEl: '.custom-next',
+          }}
           breakpoints={{
             640: {
               slidesPerView: 2,
@@ -140,6 +163,18 @@ export default function Work() {
             },
           }}
         >
+          {/* <button className="custom-prev-btn">
+            <img src={iconImages["../assets/icons/arrow-left.png"]} alt="Previous" />
+          </button>
+          <button className="custom-next-btn">
+            <img src={iconImages["../assets/icons/arrow-right.png"]} alt="Next" />
+          </button> */}
+          <button className="custom-prev bg-orange-600 hover:bg-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
+            <img src={iconImages["../assets/icons/arrow-left.png"]} alt="Previous" />
+          </button>
+          <button className="custom-next bg-orange-600 hover:bg-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
+            <img src={iconImages["../assets/icons/arrow-right.png"]} alt="Next" />
+          </button>
           {projects.map((project, index) => (
             <SwiperSlide key={index} className="h-full">
               <motion.div
@@ -192,7 +227,7 @@ export default function Work() {
                       rel="noopener noreferrer"
                       className="mt-auto inline-flex w-fit items-center rounded-md bg-orange-600 px-4 py-2 font-mono text-sm text-white transition-colors hover:bg-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
                     >
-                      View project
+                      {project.title.includes("Telegram") ? "View on GitHub" : "Visit Site"}
                     </a>
                   </div>
                 </div>

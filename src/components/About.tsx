@@ -42,7 +42,7 @@ export default function About() {
           className="w-full max-w-md mx-auto rounded-lg object-cover"
         />
         <div className="max-w-2xl text-sm sm:text-base font-mono text-justify leading-relaxed">
-          <h3 className="text-xl font-bold mb-4">Hi, I'm Diaz</h3>
+          <h3 className="text-xl md:text-2xl font-bold mb-4">Hi, I'm Diaz</h3>
           <p>
             Network Engineer with a 5+ year background in Digital Marketing Agencies, managing Shopify platforms for major brands like Atmos Indonesia, Persebaya Store, Woodka Watch, and 15+ client projects. Now leveraging strong technical and problem-solving skills into enterprise network engineering. Hands-on experience at Digiserve by Telkom Indonesia delivering large-scale SD-WAN configurations for PT Indomarco Prismatama, including leading Phase 2 rollout across Greater Bandung, Sumedang, and Sukabumi. Bringing strong TCP/IP fundamentals and high field adaptability to ISP operations.
           </p>
