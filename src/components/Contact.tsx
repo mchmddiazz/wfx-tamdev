@@ -5,18 +5,22 @@ export default function Contact() {
     {
       name: 'LinkedIn',
       href: 'https://www.linkedin.com/in/mochamad-dhias',
+      showedName: 'Mochamad Dhias Ath - thariq',
     },
     {
       name: 'GitHub',
       href: 'https://www.github.com/mchmddiazz',
+      showedName: '@mchmddiazz',
     },
     {
       name: 'Instagram',
-      href: 'https://www.instagram.com/flowyourcode/',
+      href: 'https://www.instagram.com/mchmddiaz/',
+      showedName: '@mchmddiaz',
     },
     {
       name: 'Email',
       href: 'mailto:mchmddiazz@gmail.com',
+      showedName: 'mchmddiazz@gmail.com'
     },
   ];
 
@@ -69,7 +73,7 @@ export default function Contact() {
                     {link.name}
                   </span>
                   <span className="text-sm text-orange-600 dark:text-orange-600">
-                    {link.name === 'Email' ? 'mchmddiazz@gmail.com' : '@mchmddiazz'}
+                    {link.showedName}
                   </span>
                 </div>
                 <div className="absolute bottom-0 left-0 h-[1px] w-0 group-hover:w-full bg-neutral-600 dark:bg-neutral-600 transition-all duration-500" />

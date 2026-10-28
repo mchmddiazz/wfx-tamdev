@@ -1,0 +1,39 @@
+.custom-prev,
+.custom-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  /* background-color: #ffffff;
+  border: 1px solid #e2e8f0; */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.custom-prev {left: 12px; }
+.custom-next { right: 12px; }
+
+/* .custom-prev:hover,
+.custom-next:hover {
+  background-color: #007aff;
+  color: #ffffff;
+} */
+
+.custom-prev img,
+.custom-next img {
+  width: 16px;
+  height: 16px;
+  transition: all 0.2s ease;
+}
+
+/* Swiper automatically adds the disabled class on start/end bounds */
+.swiper-button-disabled {
+  display: none;
+}
