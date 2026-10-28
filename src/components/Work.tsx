@@ -30,17 +30,10 @@ export default function Work() {
   const projects = [
     {
       title: "Mario Minardi",
-      description: "Optimized site performance, fixed legacy bugs, and integrated third-party applications to boost overall speed and user experience.",
+      description: "Optimized site performance, fixed legacy bugs, adding new features, and integrated third-party applications to enhance user experience.",
       image: projectImages["../assets/img/mariominardi.webp"],
       technologies: ["Shopify", "Liquid", "JavaScript"],
       url: "https://mariominardi.com",
-    },
-    {
-      title: "Npure",
-      description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      image: projectImages["../assets/img/npure.webp"],
-      technologies: ["Shopify", "Liquid", "JavaScript"],
-      url: "https://npureofficial.id",
     },
     {
       title: "Persebaya Store",
