@@ -2,6 +2,7 @@ import { useState, useEffect, Suspense, lazy } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Loading } from './components/Loading';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 const Navigation = lazy(() => import('./components/Navigation'));
 const Hero       = lazy(() => import('./components/Hero'));
@@ -49,6 +50,7 @@ export default function App() {
             </motion.div>
           </Suspense>
         )}
+        <SpeedInsights />
       </div>
     </ThemeProvider>
   );
