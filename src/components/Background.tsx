@@ -53,18 +53,18 @@ export default function Background() {
       aria-labelledby="experience-title"
     >
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 1 }}
         className="flex flex-col items-start justify-center text-left max-w-4xl mx-auto w-full"
       >
-  <div className="space-y-10 w-full pt-12 md:pt-auto">
+  <div className="space-y-10 w-full pt-6 md:pt-auto">
     {/* Work Experience Section */}
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 50 }}
-      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: 25 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 25 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
     >
       <h3 className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-4 text-orange-600 dark:text-orange-600">
@@ -74,7 +74,7 @@ export default function Background() {
         {workExperiences.map((exp, index) => (
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -97,8 +97,8 @@ export default function Background() {
 
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 50 }}
-      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: 25 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 25 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
     >
       <h3 className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-4 text-orange-600 dark:text-orange-600">
@@ -108,7 +108,7 @@ export default function Background() {
         {anotherWorkExperiences.map((exp, index) => (
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.6, delay: index * 0.1 }}
