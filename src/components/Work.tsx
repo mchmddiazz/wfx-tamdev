@@ -152,6 +152,10 @@ export default function Work() {
             prevEl: '.custom-prev',
             nextEl: '.custom-next',
           }}
+          pagination={{
+            el: '.custom-pagination',
+            clickable: true,
+          }}
           breakpoints={{
             640: {
               slidesPerView: 2,
@@ -169,16 +173,22 @@ export default function Work() {
           <button className="custom-next-btn">
             <img src={iconImages["../assets/icons/arrow-right.png"]} alt="Next" />
           </button> */}
-          <button className="custom-prev bg-orange-600 hover:bg-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
-            <img src={iconImages["../assets/icons/arrow-left.png"]} alt="Previous" />
-          </button>
-          <button className="custom-next bg-orange-600 hover:bg-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
-            <img src={iconImages["../assets/icons/arrow-right.png"]} alt="Next" />
-          </button>
+          <div className="swiper-nav-wrapper flex md:hidden mt-4">
+            <button className="custom-prev bg-orange-600 hover:bg-orange-700 md:p-2 rounded text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
+              <img src={iconImages["../assets/icons/arrow-left.png"]} alt="Previous" />
+            </button>
+
+            {/* Custom Pagination Target Container */}
+            <div className="custom-pagination flex items-center justify-center gap-2"></div>
+
+            <button className="custom-next bg-orange-600 hover:bg-orange-700 md:p-2 rounded text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
+              <img src={iconImages["../assets/icons/arrow-right.png"]} alt="Next" />
+            </button>
+          </div>
           {projects.map((project, index) => (
             <SwiperSlide key={index} className="h-full">
               <motion.div
-                className="group h-full md:h-[60vh] flex border border-orange-500/20 dark:border-orange-500/20 rounded-xl flex-col p-6 backdrop-blur-sm transition-all duration-300 hover:border-orange-500/50 hover:dark:border-orange-500/30"
+                className="group h-[65vh] md:h-[60vh] flex border border-orange-500/20 dark:border-orange-500/20 rounded-xl flex-col p-6 backdrop-blur-sm transition-all duration-300 hover:border-orange-500/50 hover:dark:border-orange-500/30"
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
