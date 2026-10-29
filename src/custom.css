@@ -15,7 +15,7 @@
   transition: all 0.2s ease;
 }
 
-.custom-prev {left: 12px; }
+.custom-prev { left: 12px; }
 .custom-next { right: 12px; }
 
 .custom-prev img,
