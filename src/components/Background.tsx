@@ -8,20 +8,20 @@ const workExperiences = [
     period: "Sep 2026 - Now",
     description: "Installed, replaced, and configured SD-WAN hardware for Digiserve enterprise clients at PT Indomarco Prismatama retail sites, managing network deployment projects across Greater Bandung, Priangan Timur, Sumedang, and Sukabumi. Responsible for cable routing, labeling, server rack setup, and testing network connectivity and failover performance while collaborating with the central NOC team for remote device provisioning and creating accurate work completion reports.",
   },
+];
+
+const anotherWorkExperiences = [
+  // {
+  //   company: "PT. XLSmart Telecom Sejahtera (Legacy Smartfren)",
+  //   role: "Sales Direct Selling Agent",
+  //   period: "May 2025 - Jun 2026",
+  //   description: "Experienced in intensive fieldwork, maintaining strong customer communication, and resolving on-site issues, while achieving top sales performance in the Andir and Sukajadi areas twice.",
+  // },
   {
     company: "Boleh Dicoba Digital",
     role: "Web Developer",
     period: "Sep 2019 - Feb 2025",
     description: "Designing and customizing client e-commerce websites using Shopify and Liquid templates from brief to deployment, consistently optimizing page load performance to meet platform standards while redesigning interfaces based on Figma mockups, collaborating with design teams, resolving technical issues, and documenting troubleshooting procedures.",
-  }
-];
-
-const anotherWorkExperiences = [
-  {
-    company: "PT. XLSmart Telecom Sejahtera (Legacy Smartfren)",
-    role: "Sales Direct Selling Agent",
-    period: "May 2025 - Jun 2026",
-    description: "Experienced in intensive fieldwork, maintaining strong customer communication, and resolving on-site issues, while achieving top sales performance in the Andir and Sukajadi areas twice.",
   }
 ];
 
@@ -53,7 +53,7 @@ export default function Background() {
       aria-labelledby="experience-title"
     >
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 1 }}
@@ -63,8 +63,8 @@ export default function Background() {
     {/* Work Experience Section */}
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 25 }}
-      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 25 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
     >
       <h3 className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-4 text-orange-600 dark:text-orange-600">
@@ -97,8 +97,8 @@ export default function Background() {
 
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 25 }}
-      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 25 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
     >
       <h3 className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-4 text-orange-600 dark:text-orange-600">
