@@ -188,7 +188,7 @@ export default function Work() {
           {projects.map((project, index) => (
             <SwiperSlide key={index} className="h-full">
               <motion.div
-                className="group h-[65vh] md:h-[60vh] flex border border-orange-500/20 dark:border-orange-500/20 rounded-xl flex-col p-6 backdrop-blur-sm transition-all duration-300 hover:border-orange-500/50 hover:dark:border-orange-500/30"
+                className="group h-[75vh] md:h-[60vh] flex border border-orange-500/20 dark:border-orange-500/20 rounded-xl flex-col p-6 backdrop-blur-sm transition-all duration-300 hover:border-orange-500/50 hover:dark:border-orange-500/30"
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}

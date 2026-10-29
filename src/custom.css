@@ -32,17 +32,17 @@
 @media (max-width: 768px) {
   .custom-prev,
   .custom-next {
-    position: relative;
+    /* position: relative;
     inset: auto;
-    transform: none;
-    width: 26px;
-    height: 22px;
+    transform: none; */
+    width: 33px;
+    height: 33px;
   }
 
   .custom-prev img,
   .custom-next img {
-    width: 14px;
-    height: 14px;
+    width: 18px;
+    height: 18px;
     padding: 0.2rem;
   }
 
