@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vercel/speed-insights": "^2.0.0",
     "framer-motion": "^12.23.6",
     "lucide-react": "^0.408.0",
     "pnpm": "^12.15.0",
