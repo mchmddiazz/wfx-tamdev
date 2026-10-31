@@ -86,7 +86,7 @@ export default function Work() {
     {
       title: "WFX Telegram Bot (Private Project)",
       description: "An automated Telegram bot using Telethon to manage session files, export data, and real-time notifications.",
-      image: projectImages["../assets/img/wfx-tele.webp"],
+      image: projectImages["../assets/img/wfx-tele-update.webp"],
       technologies: ["Python", "Telethon", "Aiogram"],
       url: "https://github.com/mchmddiazz/wfx-telegram-bot",
     },
