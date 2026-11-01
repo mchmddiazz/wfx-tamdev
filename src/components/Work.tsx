@@ -84,8 +84,8 @@ export default function Work() {
       url: "https://easea.co",
     },
     {
-      title: "WFX Telegram Bot (Private Project)",
-      description: "An automated Telegram bot using Telethon to manage session files, export data, and real-time notifications.",
+      title: "WFX Session Tools",
+      description: "Developed an automated Telegram bot and cli using Telethon to manage session files, export data with Telethon",
       image: projectImages["../assets/img/wfx-tele-update.webp"],
       technologies: ["Python", "Telethon", "Aiogram"],
       url: "https://github.com/mchmddiazz/wfx-telegram-bot",
@@ -173,7 +173,7 @@ export default function Work() {
           <button className="custom-next-btn">
             <img src={iconImages["../assets/icons/arrow-right.png"]} alt="Next" />
           </button> */}
-          <div className="swiper-nav-wrapper flex md:hidden mt-4">
+          <div className="swiper-nav-wrapper flex mt-4">
             <button className="custom-prev bg-orange-600 hover:bg-orange-700 md:p-2 rounded text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
               <img src={iconImages["../assets/icons/arrow-left.png"]} alt="Previous" />
             </button>
