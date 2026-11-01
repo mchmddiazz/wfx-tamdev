@@ -26,7 +26,12 @@
 }
 
 .swiper-button-disabled {
-  display: none;
+  display: flex;
+  opacity: 0.5;
+}
+
+.custom-pagination .swiper-pagination-bullet {
+  background-color: oklch(64.6% 0.222 41.116);
 }
 
 @media (max-width: 768px) {
@@ -44,14 +49,5 @@
     width: 18px;
     height: 18px;
     padding: 0.2rem;
-  }
-
-  .swiper-button-disabled {
-    display: flex;
-    opacity: 0.5;
-  }
-
-  .custom-pagination .swiper-pagination-bullet {
-    background-color: oklch(64.6% 0.222 41.116);
   }
 }
