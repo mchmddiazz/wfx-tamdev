@@ -87,7 +87,7 @@ export default function Work() {
       title: "WFX Session Tools",
       description: "Developed an automated Telegram bot and cli using Telethon to manage session files, export data with Telethon",
       image: projectImages["../assets/img/wfx-tele-update.webp"],
-      technologies: ["Python", "Telethon", "Aiogram"],
+      technologies: ["Python", "Telethon", "Aiogram", "Telegram API"],
       url: "https://github.com/mchmddiazz/wfx-telegram-bot",
     },
   ];
