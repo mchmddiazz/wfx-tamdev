@@ -1,8 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { supabase } from '../lib/supabase';
+import defaultResumePdf from '../assets/resume.pdf';
 import { Menu, X } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import resume from '../assets/resume.pdf';
 import { motion, AnimatePresence } from 'framer-motion';
+
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,6 +39,8 @@ export default function Navigation() {
       isActive(section) ? '!text-orange-600 dark:!text-orange-600 font-medium' : ''
     }`;
 
+  const [resumeUrl, setResumeUrl] = useState<string>(defaultResumePdf);
+
   // Framer Motion variants
   const menuVariants = {
     hidden: { opacity: 0, y: '-100%' },
@@ -56,6 +61,21 @@ export default function Navigation() {
     visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: 'easeOut' } },
     exit: { opacity: 0, x: -20, transition: { duration: 0.3, ease: 'easeIn' } },
   };
+
+  useEffect(() => {
+    async function loadResume() {
+      const { data, error } = await supabase
+        .from('site_profile')
+        .select('resume_pdf_url')
+        .eq('id', 1)
+        .single();
+
+      if (!error && data?.resume_pdf_url) {
+        setResumeUrl(data.resume_pdf_url);
+      }
+    }
+    loadResume();
+  }, []);
 
   return (
     <>
@@ -134,8 +154,10 @@ export default function Navigation() {
               initial={{ x: -10, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 1, delay: 0.1 }}
-              href={resume}
-              download
+              href={resumeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              download="resume.pdf"
               className="underline decoration-dotted underline-offset-2 text-neutral-500 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-600 transition-colors text-md font-gambarino tracking-tight leading-none flex items-center gap-1"
             >
               Resume*

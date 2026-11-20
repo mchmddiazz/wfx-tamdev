@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+import { Project } from "../types/cms";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 
@@ -19,78 +21,120 @@ const iconImages = import.meta.glob<string>("../assets/icons/*.png", {
   import: "default",
 });
 
+interface DisplayProject {
+  id?: string;
+  title: string;
+  description: string;
+  image: string;
+  technologies: string[];
+  url: string;
+  isRepo?: boolean;
+}
+
+const FALLBACK_PROJECTS: DisplayProject[] = [
+  {
+    title: "Green Rebel Foods",
+    description:
+      "Implemented custom cart logic to alert customers when frozen and non-frozen items are mixed in the same shipment.",
+    image: projectImages["../assets/img/gr-foods.webp"],
+    technologies: ["Shopify", "Liquid", "JavaScript", "Cart.js", "Storefront API"],
+    url: "https://greenrebelfoods.com",
+  },
+  {
+    title: "Mario Minardi",
+    description:
+      "Optimized site performance, fixed legacy bugs, adding new features, and integrated third-party applications to enhance user experience.",
+    image: projectImages["../assets/img/mariominardi.webp"],
+    technologies: ["Shopify", "Liquid", "JavaScript", "Storefront API"],
+    url: "https://mariominardi.com",
+  },
+  {
+    title: "Luma (ex Kasanoa)",
+    description:
+      "Built a custom Shopify theme for a client, focusing on a clean and modern design to enhance user experience.",
+    image: projectImages["../assets/img/luma-ex-kasanoa.webp"],
+    technologies: ["Shopify", "Liquid", "JavaScript"],
+    url: "https://luma.id",
+  },
+  {
+    title: "Persebaya Store",
+    description:
+      "Engineered custom jersey name-set personalization and tailored the checkout flow for a seamless customer purchasing experience.",
+    image: projectImages["../assets/img/persebaya.webp"],
+    technologies: ["Shopify", "Liquid", "JavaScript", "Cart.js", "Storefront API"],
+    url: "https://persebayastore.com",
+  },
+  {
+    title: "Sonderlab",
+    description:
+      "Developed a custom Shopify theme featuring specialized e-commerce features and bug fixes to drive engagement and sales.",
+    image: projectImages["../assets/img/sonderlab.webp"],
+    technologies: ["Shopify", "Liquid", "JavaScript"],
+    url: "https://sonderlab.co",
+  },
+  {
+    title: "Woodka Watch",
+    description:
+      "Created a custom Shopify theme with bespoke product bundling features to boost store conversion and average order value.",
+    image: projectImages["../assets/img/woodka.webp"],
+    technologies: ["Shopify", "Liquid", "JavaScript", "Cart.js", "Storefront API"],
+    url: "https://woodka.fun",
+  },
+  {
+    title: "Easea.co",
+    description:
+      "Optimized site performance, fixed legacy bugs, and integrated third-party applications to boost overall speed and user experience.",
+    image: projectImages["../assets/img/easea.webp"],
+    technologies: ["Shopify", "Liquid", "JavaScript"],
+    url: "https://easea.co",
+  },
+  {
+    title: "WFX Session Tools",
+    description:
+      "Developed an automated Telegram bot and cli using Telethon to manage session files, export data with Telethon",
+    image: projectImages["../assets/img/wfx-tele-update.webp"],
+    technologies: ["Python", "Telethon", "Aiogram", "Telegram API"],
+    url: "https://github.com/mchmddiazz/wfx-telegram-bot",
+    isRepo: true,
+  },
+];
+
 export default function Work() {
   const [isMobile, setIsMobile] = useState(false);
+  const [projects, setProjects] = useState<DisplayProject[]>(FALLBACK_PROJECTS);
 
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
 
+    async function loadProjects() {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("is_published", true)
+        .order("sort_order", { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        const mapped: DisplayProject[] = (data as Project[]).map((item) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          image: item.thumbnail_url,
+          technologies: item.tech_stack || [],
+          url: item.live_url || item.repo_url || "#",
+          isRepo: !item.live_url && Boolean(item.repo_url),
+        }));
+        setProjects(mapped);
+      }
+    }
+
+    loadProjects();
     checkMobile();
     window.addEventListener("resize", checkMobile);
 
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-
-  const projects = [
-    {
-      title: "Green Rebel Foods",
-      description: "Implemented custom cart logic to alert customers when frozen and non-frozen items are mixed in the same shipment.",
-      image: projectImages["../assets/img/gr-foods.webp"],
-      technologies: ["Shopify", "Liquid", "JavaScript", "Cart.js", "Storefront API"],
-      url: "https://greenrebelfoods.com",
-    },
-    {
-      title: "Mario Minardi",
-      description: "Optimized site performance, fixed legacy bugs, adding new features, and integrated third-party applications to enhance user experience.",
-      image: projectImages["../assets/img/mariominardi.webp"],
-      technologies: ["Shopify", "Liquid", "JavaScript", "Storefront API"],
-      url: "https://mariominardi.com",
-    },
-    {
-      title: "Luma (ex Kasanoa)",
-      description: "Built a custom Shopify theme for a client, focusing on a clean and modern design to enhance user experience.",
-      image: projectImages["../assets/img/luma-ex-kasanoa.webp"],
-      technologies: ["Shopify", "Liquid", "JavaScript"],
-      url: "https://luma.id",
-    },
-    {
-      title: "Persebaya Store",
-      description: "Engineered custom jersey name-set personalization and tailored the checkout flow for a seamless customer purchasing experience.",
-      image: projectImages["../assets/img/persebaya.webp"],
-      technologies: ["Shopify", "Liquid", "JavaScript", "Cart.js", "Storefront API"],
-      url: "https://persebayastore.com",
-    },
-    {
-      title: "Sonderlab",
-      description: "Developed a custom Shopify theme featuring specialized e-commerce features and bug fixes to drive engagement and sales.",
-      image: projectImages["../assets/img/sonderlab.webp"],
-      technologies: ["Shopify", "Liquid", "JavaScript"],
-      url: "https://sonderlab.co",
-    },
-    {
-      title: "Woodka Watch",
-      description: "Created a custom Shopify theme with bespoke product bundling features to boost store conversion and average order value.",
-      image: projectImages["../assets/img/woodka.webp"],
-      technologies: ["Shopify", "Liquid", "JavaScript", "Cart.js", "Storefront API"],
-      url: "https://woodka.fun",
-    },
-    {
-      title: "Easea.co",
-      description: "Optimized site performance, fixed legacy bugs, and integrated third-party applications to boost overall speed and user experience.",
-      image: projectImages["../assets/img/easea.webp"],
-      technologies: ["Shopify", "Liquid", "JavaScript"],
-      url: "https://easea.co",
-    },
-    {
-      title: "WFX Session Tools",
-      description: "Developed an automated Telegram bot and cli using Telethon to manage session files, export data with Telethon",
-      image: projectImages["../assets/img/wfx-tele-update.webp"],
-      technologies: ["Python", "Telethon", "Aiogram", "Telegram API"],
-      url: "https://github.com/mchmddiazz/wfx-telegram-bot",
-    },
-  ];
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isMobile) return;
@@ -149,11 +193,11 @@ export default function Work() {
           spaceBetween={20}
           slidesPerView={1}
           navigation={{
-            prevEl: '.custom-prev',
-            nextEl: '.custom-next',
+            prevEl: ".custom-prev",
+            nextEl: ".custom-next",
           }}
           pagination={{
-            el: '.custom-pagination',
+            el: ".custom-pagination",
             clickable: true,
           }}
           breakpoints={{
@@ -167,26 +211,26 @@ export default function Work() {
             },
           }}
         >
-          {/* <button className="custom-prev-btn">
-            <img src={iconImages["../assets/icons/arrow-left.png"]} alt="Previous" />
-          </button>
-          <button className="custom-next-btn">
-            <img src={iconImages["../assets/icons/arrow-right.png"]} alt="Next" />
-          </button> */}
           <div className="swiper-nav-wrapper flex mt-4">
             <button className="custom-prev bg-orange-600 hover:bg-orange-700 md:p-2 rounded text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
-              <img src={iconImages["../assets/icons/arrow-left.png"]} alt="Previous" />
+              <img
+                src={iconImages["../assets/icons/arrow-left.png"]}
+                alt="Previous"
+              />
             </button>
 
-            {/* Custom Pagination Target Container */}
             <div className="custom-pagination flex items-center justify-center gap-2"></div>
 
             <button className="custom-next bg-orange-600 hover:bg-orange-700 md:p-2 rounded text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
-              <img src={iconImages["../assets/icons/arrow-right.png"]} alt="Next" />
+              <img
+                src={iconImages["../assets/icons/arrow-right.png"]}
+                alt="Next"
+              />
             </button>
           </div>
+
           {projects.map((project, index) => (
-            <SwiperSlide key={index} className="h-full">
+            <SwiperSlide key={project.id ?? index} className="h-full">
               <motion.div
                 className="group h-[75vh] md:h-[60vh] flex border border-orange-500/20 dark:border-orange-500/20 rounded-xl flex-col p-6 backdrop-blur-sm transition-all duration-300 hover:border-orange-500/50 hover:dark:border-orange-500/30"
                 initial={{ opacity: 0, y: 40 }}
@@ -237,7 +281,9 @@ export default function Work() {
                       rel="noopener noreferrer"
                       className="mt-auto inline-flex w-fit items-center rounded-md bg-orange-600 px-4 py-2 font-mono text-sm text-white transition-colors hover:bg-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
                     >
-                      {project.title.includes("Telegram") ? "View on GitHub" : "Visit Site"}
+                      {project.isRepo || project.title.includes("Telegram")
+                        ? "View on GitHub"
+                        : "Visit Site"}
                     </a>
                   </div>
                 </div>
