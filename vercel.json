@@ -1,17 +1,4 @@
 {
-  "redirects": [
-    {
-      "source": "/(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "neelshha.com"
-        }
-      ],
-      "destination": "https://www.neelshha.com/$1",
-      "permanent": true
-    }
-  ],
   "rewrites": [
     {
       "source": "/(.*)",
