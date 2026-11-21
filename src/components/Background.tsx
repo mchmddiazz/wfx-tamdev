@@ -59,7 +59,7 @@ function getDuration(periodStr: string): string {
   }
 
   // Calculate inclusive month difference
-  let totalMonths =
+  const totalMonths =
     (endDate.getFullYear() - startDate.getFullYear()) * 12 +
     (endDate.getMonth() - startDate.getMonth()) + 1;
 
