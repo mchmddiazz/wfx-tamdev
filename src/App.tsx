@@ -10,7 +10,7 @@ import { ScrollProgress } from './components/ScrollProgress';
 const Navigation = lazy(() => import('./components/Navigation'));
 const Hero       = lazy(() => import('./components/Hero'));
 const About      = lazy(() => import('./components/About'));
-const Value      = lazy(() => import('./components/Value'));
+// const Value      = lazy(() => import('./components/Value'));
 const Background = lazy(() => import('./components/Background'));
 const Work       = lazy(() => import('./components/Work'));
 const Contact    = lazy(() => import('./components/Contact'));
@@ -57,7 +57,7 @@ function PortfolioPage() {
             <main>
               <Hero />
               <About />
-              <Value />
+              {/* <Value /> */}
               <Background />
               <Work />
               <Contact />

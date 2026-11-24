@@ -92,7 +92,7 @@ export default function Navigation() {
           >
             <motion.div className="h-full flex flex-col justify-start items-start px-8 pb-8 pt-20 space-y-6">
               <div className="space-y-6 w-full">
-                {['intro', 'about', 'values', 'background', 'work', 'contact'].map(sec => (
+                {['intro', 'about', 'background', 'work', 'contact'].map(sec => (
                   <motion.a
                     key={sec}
                     href={`#${sec}`}
@@ -138,7 +138,7 @@ export default function Navigation() {
             Tamdev.
           </a>
           <div className="flex-1 flex flex-col justify-center space-y-4">
-            {['intro', 'about', 'values', 'background', 'work', 'contact'].map((sec, idx) => (
+            {['intro', 'about', 'background', 'work', 'contact'].map((sec, idx) => (
               <motion.a
                 key={sec}
                 initial={{ x: -10, opacity: 0 }}
