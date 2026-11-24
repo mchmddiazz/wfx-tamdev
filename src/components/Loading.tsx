@@ -28,13 +28,17 @@ export function Loading({ setIsLoading }: { setIsLoading: (loading: boolean) => 
 
   useEffect(() => {
     if (currentIndex === name.length) {
-      const doneTimeout = setTimeout(() => setIsLoading(false), 1800);
+      const doneTimeout = setTimeout(() => setIsLoading(false), 700);
       return () => clearTimeout(doneTimeout);
     }
   }, [currentIndex, name.length, setIsLoading]);
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-200 dark:bg-black">
+    <motion.div
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0, y: -20, transition: { duration: 0.5, ease: 'easeInOut' } }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-200 dark:bg-black"
+    >
       <span className="font-gambarino text-[2rem] text-neutral-900 dark:text-white bg-transparent drop-shadow-md inline-flex">
         {name.split('').map((char, idx) => {
           if (idx >= currentIndex) return null;
@@ -76,6 +80,6 @@ export function Loading({ setIsLoading }: { setIsLoading: (loading: boolean) => 
         })}
         <span className={showCursor ? 'inline' : 'invisible'}>|</span>
       </span>
-    </div>
+    </motion.div>
   );
 }

@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { useEffect, useRef, useState } from 'react';
 
 const workExperiences = [
   {
@@ -75,26 +74,6 @@ function getDuration(periodStr: string): string {
 }
 
 export default function Background() {
-  const ref = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.3 }
-    );
-
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
-
-    return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
-      }
-    };
-  }, []);
-
   return (
     <section
       id="background"
@@ -102,39 +81,42 @@ export default function Background() {
       aria-labelledby="experience-title"
     >
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.2 }}
-        transition={{ duration: 1 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.8 }}
         className="flex flex-col items-start justify-center text-left max-w-4xl mx-auto w-full"
       >
-        <div className="space-y-10 w-full pt-6 md:pt-auto">
+        <div className="space-y-12 w-full pt-6 md:pt-auto">
           {/* Work Experience Section */}
           <motion.div
-            ref={ref}
-            initial={{ opacity: 0, y: 10 }}
-            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
           >
-            <h3 className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-4 text-orange-600 dark:text-orange-600">
+            <h3 className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-6 text-orange-600 dark:text-orange-600 tracking-wide">
               WORK EXPERIENCE
             </h3>
-            <div className="flex flex-col gap-8">
+            <div className="relative pl-6 sm:pl-8 border-l-2 border-orange-500/30 flex flex-col gap-10">
               {workExperiences.map((exp, index) => {
                 const duration = getDuration(exp.period);
                 return (
                   <motion.div
                     key={index}
-                    initial={{ opacity: 0, y: 15 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, x: -12 }}
+                    whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true, amount: 0.2 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="flex flex-row items-start gap-4"
+                    className="relative flex flex-col gap-2 group"
                   >
+                    {/* Animated Timeline Node */}
+                    <span className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-3.5 h-3.5 rounded-full bg-orange-600 ring-4 ring-neutral-200 dark:ring-black group-hover:scale-125 transition-transform duration-300" />
+                    
                     <div className="space-y-2">
-                      <div className="text-base text-orange-600 dark:text-orange-600 font-mono">{exp.company}</div>
+                      <div className="text-base text-orange-600 dark:text-orange-600 font-mono font-medium">{exp.company}</div>
                       <div className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white leading-tight">{exp.role}</div>
-                      <div className="flex flex-row items-center font-mono gap-2 text-xs text-orange-600 dark:text-orange-600 mb-1">
+                      <div className="flex flex-wrap items-center font-mono gap-2 text-xs text-orange-600/90 dark:text-orange-400 mb-1">
                         <span>{exp.period}</span>
                         {duration && (
                           <>
@@ -142,11 +124,14 @@ export default function Background() {
                             <span>{duration}</span>
                           </>
                         )}
+                        {exp.city && (
+                          <>
+                            <span>•</span>
+                            <span>{exp.city}</span>
+                          </>
+                        )}
                       </div>
-                      <div className="flex flex-row items-center font-mono gap-2 text-xs text-orange-600 dark:text-orange-600 mb-2 mt-2">
-                        {exp.city && <span>{exp.city}</span>}
-                      </div>
-                      <div className="text-neutral-800 font-mono dark:text-neutral-300 text-sm max-w-2xl leading-relaxed">
+                      <div className="text-neutral-800 font-mono dark:text-neutral-300 text-sm max-w-2xl leading-relaxed mt-2">
                         {exp.description}
                       </div>
                     </div>
@@ -158,30 +143,33 @@ export default function Background() {
 
           {/* Another Work Experience Section */}
           <motion.div
-            ref={ref}
-            initial={{ opacity: 0, y: 10 }}
-            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
           >
-            <h3 className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-4 text-orange-600 dark:text-orange-600">
+            <h3 className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-6 text-orange-600 dark:text-orange-600 tracking-wide">
               ANOTHER WORK EXPERIENCE
             </h3>
-            <div className="flex flex-col gap-8">
+            <div className="relative pl-6 sm:pl-8 border-l-2 border-orange-500/30 flex flex-col gap-10">
               {anotherWorkExperiences.map((exp, index) => {
                 const duration = getDuration(exp.period);
                 return (
                   <motion.div
                     key={index}
-                    initial={{ opacity: 0, y: 15 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, x: -12 }}
+                    whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true, amount: 0.2 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="flex flex-row items-start gap-4"
+                    className="relative flex flex-col gap-2 group"
                   >
+                    {/* Animated Timeline Node */}
+                    <span className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-3.5 h-3.5 rounded-full bg-orange-600 ring-4 ring-neutral-200 dark:ring-black group-hover:scale-125 transition-transform duration-300" />
+
                     <div className="space-y-2">
-                      <div className="text-base text-orange-600 dark:text-orange-600 font-mono">{exp.company}</div>
+                      <div className="text-base text-orange-600 dark:text-orange-600 font-mono font-medium">{exp.company}</div>
                       <div className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white leading-tight">{exp.role}</div>
-                      <div className="flex flex-row items-center font-mono gap-2 text-xs text-orange-600 dark:text-orange-600 mb-1">
+                      <div className="flex flex-wrap items-center font-mono gap-2 text-xs text-orange-600/90 dark:text-orange-400 mb-1">
                         <span>{exp.period}</span>
                         {duration && (
                           <>
@@ -189,11 +177,14 @@ export default function Background() {
                             <span>{duration}</span>
                           </>
                         )}
+                        {exp.city && (
+                          <>
+                            <span>•</span>
+                            <span>{exp.city}</span>
+                          </>
+                        )}
                       </div>
-                      <div className="flex flex-row items-center font-mono gap-2 text-xs text-orange-600 dark:text-orange-600 mb-2 mt-2">
-                        {exp.city && <span>{exp.city}</span>}
-                      </div>
-                      <div className="text-neutral-800 font-mono dark:text-neutral-300 text-sm max-w-2xl leading-relaxed">
+                      <div className="text-neutral-800 font-mono dark:text-neutral-300 text-sm max-w-2xl leading-relaxed mt-2">
                         {exp.description}
                       </div>
                     </div>

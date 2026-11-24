@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { ArrowUpRight, Copy, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { SocialLink } from '../types/cms';
 
@@ -41,6 +42,13 @@ export default function Contact() {
   const [title, setTitle] = useState(DEFAULT_TITLE);
   const [subtitle, setSubtitle] = useState(DEFAULT_SUBTITLE);
   const [socialLinks, setSocialLinks] = useState<DisplaySocial[]>(FALLBACK_SOCIALS);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyEmail = (email: string) => {
+    navigator.clipboard.writeText(email);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     async function loadContactSection() {
@@ -119,22 +127,25 @@ export default function Contact() {
 
         <div className="flex flex-col gap-8 mb-16">
           {socialLinks.map((link, index) => {
-            const isMailto =
+            const isEmail =
               link.name === 'Email' || link.href.startsWith('mailto:');
+            const cleanEmail = link.href.replace('mailto:', '');
 
             return (
-              <motion.a
+              <motion.div
                 key={link.id ?? link.name}
-                href={link.href}
-                target={!isMailto ? '_blank' : undefined}
-                rel={!isMailto ? 'noopener noreferrer' : undefined}
-                className="group"
+                className="flex items-center gap-4 group"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.6, delay: index * 0.15 }}
+                transition={{ duration: 0.6, delay: index * 0.12 }}
               >
-                <div className="relative inline-block">
+                <a
+                  href={link.href}
+                  target={!isEmail ? '_blank' : undefined}
+                  rel={!isEmail ? 'noopener noreferrer' : undefined}
+                  className="relative inline-block"
+                >
                   <div className="flex items-baseline gap-2">
                     <span className="font-gambarino text-2xl sm:text-3xl text-neutral-900 dark:text-white group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
                       {link.name}
@@ -142,10 +153,46 @@ export default function Contact() {
                     <span className="text-sm text-orange-600 dark:text-orange-600">
                       {link.showedName}
                     </span>
+                    <ArrowUpRight
+                      size={18}
+                      className="text-neutral-400 dark:text-neutral-500 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-300"
+                    />
                   </div>
-                  <div className="absolute bottom-0 left-0 h-[1px] w-0 group-hover:w-full bg-neutral-600 dark:bg-neutral-600 transition-all duration-500" />
-                </div>
-              </motion.a>
+                  <div className="absolute bottom-0 left-0 h-[1px] w-0 group-hover:w-full bg-orange-600 dark:bg-orange-600 transition-all duration-500" />
+                </a>
+
+                {isEmail && (
+                  <button
+                    type="button"
+                    onClick={() => handleCopyEmail(cleanEmail)}
+                    aria-label="Copy email address"
+                    className="p-1.5 rounded-lg text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-neutral-300/50 dark:hover:bg-neutral-800 transition-colors relative cursor-pointer"
+                  >
+                    <AnimatePresence mode="wait">
+                      {copied ? (
+                        <motion.span
+                          key="copied"
+                          initial={{ scale: 0.5, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.5, opacity: 0 }}
+                          className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-mono"
+                        >
+                          <Check size={14} /> Copied!
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="copy"
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.8, opacity: 0 }}
+                        >
+                          <Copy size={15} />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </button>
+                )}
+              </motion.div>
             );
           })}
         </div>

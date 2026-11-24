@@ -92,7 +92,7 @@ export default function Navigation() {
           >
             <motion.div className="h-full flex flex-col justify-start items-start px-8 pb-8 pt-20 space-y-6">
               <div className="space-y-6 w-full">
-                {['intro', 'about', 'background', 'work', 'contact'].map(sec => (
+                {['intro', 'about', 'values', 'background', 'work', 'contact'].map(sec => (
                   <motion.a
                     key={sec}
                     href={`#${sec}`}
@@ -138,22 +138,31 @@ export default function Navigation() {
             Tamdev.
           </a>
           <div className="flex-1 flex flex-col justify-center space-y-4">
-            {['intro', 'about', 'background', 'work', 'contact'].map(sec => (
+            {['intro', 'about', 'values', 'background', 'work', 'contact'].map((sec, idx) => (
               <motion.a
                 key={sec}
                 initial={{ x: -10, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 1, delay: 0.1 }}
+                transition={{ duration: 0.6, delay: 0.08 * idx }}
+                whileHover={{ x: 4 }}
                 href={`#${sec}`}
-                className={navLinkClass(sec)}
+                className={`${navLinkClass(sec)} flex items-center gap-2`}
               >
-                {sec.charAt(0).toUpperCase() + sec.slice(1)}
+                {isActive(sec) && (
+                  <motion.span
+                    layoutId="activeNavIndicator"
+                    className="w-1.5 h-1.5 rounded-full bg-orange-600 inline-block"
+                    transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                  />
+                )}
+                <span>{sec.charAt(0).toUpperCase() + sec.slice(1)}</span>
               </motion.a>
             ))}
             <motion.a
               initial={{ x: -10, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 1, delay: 0.1 }}
+              transition={{ duration: 0.6, delay: 0.08 * 5 }}
+              whileHover={{ x: 4 }}
               href={resumeUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -184,15 +193,27 @@ export default function Navigation() {
         <a href="#intro" className="text-xl font-gambarino text-orange-600 dark:text-orange-600 hover:text-orange-800 dark:hover:text-orange-800 transition-colors tracking-tight leading-none">
           Tamdev.
         </a>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           <ThemeToggle />
-          <button
+          <motion.button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            whileTap={{ scale: 0.85 }}
             aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-            className="text-neutral-900 dark:text-white p-1"
+            className="text-neutral-900 dark:text-white p-1.5 rounded-lg flex items-center justify-center cursor-pointer"
           >
-            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={isMenuOpen ? 'open' : 'closed'}
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="block"
+              >
+                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </motion.span>
+            </AnimatePresence>
+          </motion.button>
         </div>
       </motion.div>
     </>

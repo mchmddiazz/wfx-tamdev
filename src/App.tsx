@@ -1,14 +1,16 @@
 import { useState, useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Loading } from './components/Loading';
+import { ScrollProgress } from './components/ScrollProgress';
 
 // Lazy-loaded Public Portfolio Components
 const Navigation = lazy(() => import('./components/Navigation'));
 const Hero       = lazy(() => import('./components/Hero'));
 const About      = lazy(() => import('./components/About'));
+const Value      = lazy(() => import('./components/Value'));
 const Background = lazy(() => import('./components/Background'));
 const Work       = lazy(() => import('./components/Work'));
 const Contact    = lazy(() => import('./components/Contact'));
@@ -50,10 +52,12 @@ function PortfolioPage() {
             transition={{ duration: 0.3 }}
             className="pb-safe-bottom"
           >
+            <ScrollProgress />
             <Navigation />
             <main>
               <Hero />
               <About />
+              <Value />
               <Background />
               <Work />
               <Contact />
@@ -65,11 +69,19 @@ function PortfolioPage() {
   );
 }
 
-export default function App() {
+function AnimatedAppRoutes() {
+  const location = useLocation();
+
   return (
-    <ThemeProvider>
-      <BrowserRouter>
-        <Routes>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname.startsWith('/admin') ? 'admin' : location.pathname}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
+      >
+        <Routes location={location} key={location.pathname}>
           {/* Public Portfolio with Intro Loader */}
           <Route path="/" element={<PortfolioPage />} />
 
@@ -88,6 +100,16 @@ export default function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <BrowserRouter>
+        <AnimatedAppRoutes />
         <SpeedInsights />
       </BrowserRouter>
     </ThemeProvider>

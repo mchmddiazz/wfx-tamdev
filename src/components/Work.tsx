@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { Project } from "../types/cms";
@@ -99,6 +99,87 @@ const FALLBACK_PROJECTS: DisplayProject[] = [
   },
 ];
 
+function ProjectCard({ project, isMobile }: { project: DisplayProject; isMobile: boolean }) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [10, -10]), { stiffness: 280, damping: 24 });
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-10, 10]), { stiffness: 280, damping: 24 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobile) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    x.set(mouseX / rect.width - 0.5);
+    y.set(mouseY / rect.height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      className="group h-[75vh] md:h-[60vh] flex border border-orange-500/20 dark:border-orange-500/20 rounded-xl flex-col p-6 backdrop-blur-sm transition-colors duration-300 hover:border-orange-500/50 hover:dark:border-orange-500/40"
+      initial={{ opacity: 0, y: 35 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.25 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        transformStyle: "preserve-3d",
+        rotateX: isMobile ? 0 : rotateX,
+        rotateY: isMobile ? 0 : rotateY,
+        transformPerspective: 1000,
+      }}
+    >
+      <div
+        aria-label={`Project: ${project.title}`}
+        className="flex flex-col gap-4 flex-1"
+      >
+        <div className="flex flex-col gap-4 flex-1">
+          <div className="w-full aspect-[16/9] overflow-hidden rounded-lg mb-2 bg-neutral-300 dark:bg-neutral-800">
+            <img
+              src={project.image}
+              alt={project.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+              loading="lazy"
+            />
+          </div>
+          <h3 className="font-gambarino text-[1.45rem] sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-1 leading-tight">
+            {project.title}
+          </h3>
+          <p className="text-neutral-600 dark:text-neutral-400 font-mono text-[1rem] leading-relaxed mb-3">
+            {project.description}
+          </p>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {project.technologies.map((tech, techIndex) => (
+              <span
+                key={techIndex}
+                className="text-xs px-2.5 py-1 rounded-full border border-orange-500/20 dark:border-orange-500/20 text-orange-700 dark:text-orange-300"
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
+          <a
+            href={project.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-auto inline-flex w-fit items-center rounded-md bg-orange-600 px-4 py-2 font-mono text-sm text-white transition-colors hover:bg-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+          >
+            {project.isRepo || project.title.includes("Telegram")
+              ? "View on GitHub"
+              : "Visit Site"}
+          </a>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function Work() {
   const [isMobile, setIsMobile] = useState(false);
   const [projects, setProjects] = useState<DisplayProject[]>(FALLBACK_PROJECTS);
@@ -136,44 +217,17 @@ export default function Work() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isMobile) return;
-
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    const rotateX = (y - centerY) / 15;
-    const rotateY = (centerX - x) / 15;
-
-    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isMobile) return;
-    e.currentTarget.style.transform =
-      "perspective(1000px) rotateX(0) rotateY(0)";
-  };
-
   return (
     <motion.section
       id="work"
       className="min-h-screen w-full flex flex-col items-center justify-center bg-neutral-200 dark:bg-black transition-colors py-12 sm:py-8 md:pl-[10%]"
       aria-labelledby="portfolio-title"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ staggerChildren: 0.2 }}
-      variants={{
-        hidden: {},
-        visible: {},
-      }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.8 }}
     >
-      <motion.div className="w-full max-w-6xl mx-auto px-5">
+      <div className="w-full max-w-6xl mx-auto px-5">
         <h2
           id="portfolio-title"
           className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-4 mt-8 md:mt-auto text-orange-600 dark:text-orange-600"
@@ -212,86 +266,38 @@ export default function Work() {
           }}
         >
           <div className="swiper-nav-wrapper flex mt-4">
-            <button className="custom-prev bg-orange-600 hover:bg-orange-700 md:p-2 rounded text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
+            <motion.button
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              className="custom-prev bg-orange-600 hover:bg-orange-700 md:p-2 rounded text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+            >
               <img
                 src={iconImages["../assets/icons/arrow-left.png"]}
                 alt="Previous"
               />
-            </button>
+            </motion.button>
 
             <div className="custom-pagination flex items-center justify-center gap-2"></div>
 
-            <button className="custom-next bg-orange-600 hover:bg-orange-700 md:p-2 rounded text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
+            <motion.button
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              className="custom-next bg-orange-600 hover:bg-orange-700 md:p-2 rounded text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+            >
               <img
                 src={iconImages["../assets/icons/arrow-right.png"]}
                 alt="Next"
               />
-            </button>
+            </motion.button>
           </div>
 
           {projects.map((project, index) => (
             <SwiperSlide key={project.id ?? index} className="h-full">
-              <motion.div
-                className="group h-[75vh] md:h-[60vh] flex border border-orange-500/20 dark:border-orange-500/20 rounded-xl flex-col p-6 backdrop-blur-sm transition-all duration-300 hover:border-orange-500/50 hover:dark:border-orange-500/30"
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-                style={{
-                  transformStyle: "preserve-3d",
-                  transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)",
-                  willChange: "transform",
-                }}
-              >
-                <div
-                  aria-label={`Project: ${project.title}`}
-                  className="flex flex-col gap-4 flex-1"
-                >
-                  <div className="flex flex-col gap-4 flex-1">
-                    <div className="w-full aspect-[16/9] overflow-hidden rounded-lg mb-2">
-                      <motion.img
-                        src={project.image}
-                        alt={project.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        initial={{ scale: 1 }}
-                        transition={{ duration: 0.5 }}
-                      />
-                    </div>
-                    <h3 className="font-gambarino text-[1.45rem] sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-1 leading-tight">
-                      {project.title}
-                    </h3>
-                    <p className="text-neutral-600 dark:text-neutral-400 font-mono text-[1rem] leading-relaxed mb-3">
-                      {project.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {project.technologies.map((tech, techIndex) => (
-                        <span
-                          key={techIndex}
-                          className="text-xs px-2.5 py-1 rounded-full border border-orange-500/20 dark:border-orange-500/20 text-orange-700 dark:text-orange-300"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                    <a
-                      href={project.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-auto inline-flex w-fit items-center rounded-md bg-orange-600 px-4 py-2 font-mono text-sm text-white transition-colors hover:bg-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-                    >
-                      {project.isRepo || project.title.includes("Telegram")
-                        ? "View on GitHub"
-                        : "Visit Site"}
-                    </a>
-                  </div>
-                </div>
-              </motion.div>
+              <ProjectCard project={project} isMobile={isMobile} />
             </SwiperSlide>
           ))}
         </Swiper>
-      </motion.div>
+      </div>
     </motion.section>
   );
 }
