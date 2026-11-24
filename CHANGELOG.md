@@ -5,7 +5,7 @@ All notable changes to the `wfx-tamdev` project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Animation Overhaul & Accessibility
+## [Unreleased] - Animation Overhaul & Dependency Optimization
 
 ### Added
 - **Global Motion Utilities (`src/lib/motion.ts`)**:
@@ -37,6 +37,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Reduced Motion Support (`src/index.css`)**:
   - Added global `@media (prefers-reduced-motion: reduce)` reset for accessibility and performance.
 
+### Changed
+- **Vite & Bundle Optimization (`vite.config.ts`)**:
+  - Removed obsolete `@rollup/plugin-inject` scanning for dead jQuery.
+  - Configured Rollup `manualChunks` vendor splitting (`vendor-react`, `vendor-motion`, `vendor-supabase`), reducing the primary app bundle from **601 kB down to 56 kB** (13.1 kB gzip) and unlocking long-term browser cacheability.
+- **PostCSS Pipeline (`postcss.config.js`)**:
+  - Streamlined configuration to use `@tailwindcss/postcss` with native Lightning CSS prefixing.
+
 ### Fixed
 - **Loading Screen Exit Transition (`src/components/Loading.tsx`)**:
   - Converted root container to `<motion.div>` with `exit={{ opacity: 0, y: -20 }}` so it gracefully dissolves out of `<AnimatePresence>`.
@@ -49,5 +56,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Wrapped Project and Social modals inside `<AnimatePresence>` with backdrop fade and spring scale entry/exit (`scale: 0.95 -> 1`).
 
 ### Removed
+- **Unused & Obsolete Dependencies (`package.json`)**:
+  - Removed `pnpm` from client runtime `dependencies`.
+  - Removed `jquery` and `@types/jquery`.
+  - Removed `@types/react-owl-carousel`.
+  - Removed `@rollup/plugin-inject`.
+  - Removed `@vitejs/plugin-react-oxc`.
+  - Removed `autoprefixer` (handled natively by Tailwind v4).
+- **Duplicate Lockfile**:
+  - Deleted legacy `package-lock.json` to keep `pnpm-lock.yaml` as single source of truth.
 - **Unused CSS Keyframes (`src/index.css`)**:
   - Removed dead `@keyframes fadeIn` and `@keyframes gradient-x` definitions.
