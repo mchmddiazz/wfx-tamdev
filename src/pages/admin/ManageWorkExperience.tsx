@@ -2,6 +2,7 @@ import { useEffect, useState, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { WorkExperience } from '../../types/cms';
+import { LEGACY_WORK_EXPERIENCES } from '../../data/LegacyWorkExperiences';
 
 export default function ManageWorkExperience() {
   const [experiences, setExperiences] = useState<WorkExperience[]>([]);
@@ -24,6 +25,9 @@ export default function ManageWorkExperience() {
   // Delete confirmation
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // Import legacy
+  const [importing, setImporting] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -147,6 +151,23 @@ export default function ManageWorkExperience() {
     setDeletingId(null);
   };
 
+  const handleImportLegacy = async () => {
+    if (experiences.length > 0) {
+      const confirmed = window.confirm(
+        `You already have ${experiences.length} experience(s). Import will add the legacy entries alongside them. Continue?`
+      );
+      if (!confirmed) return;
+    }
+    setImporting(true);
+    const { error } = await supabase.from('work_experiences').insert(LEGACY_WORK_EXPERIENCES);
+    if (!error) {
+      await fetchData();
+    } else {
+      alert('Error importing legacy experiences: ' + error.message);
+    }
+    setImporting(false);
+  };
+
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.95, y: 10 },
     visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
@@ -183,14 +204,28 @@ export default function ManageWorkExperience() {
             Manage your professional work history shown on the site.
           </p>
         </div>
-        <button
-          onClick={openAddModal}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors duration-200"
-        >
-          + Add Experience
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleImportLegacy}
+            disabled={importing}
+            className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 text-sm font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 flex items-center gap-2"
+          >
+            {importing && (
+              <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              </svg>
+            )}
+            {importing ? 'Importing...' : '⬆ Import Legacy'}
+          </button>
+          <button
+            onClick={openAddModal}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+          >
+            + Add Experience
+          </button>
+        </div>
       </motion.div>
-
       {/* List */}
       {loading ? (
         <div className="flex items-center justify-center py-20 text-zinc-500">Loading...</div>
