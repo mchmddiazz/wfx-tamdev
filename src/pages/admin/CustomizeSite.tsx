@@ -12,10 +12,27 @@ import {
   Trash2,
   Check,
   Sparkles,
+  Upload,
+  Database,
+  Lock,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { SiteSection, SectionType } from '../../types/cms';
+import {
+  ProjectBlockItem,
+  SiteSection,
+  SectionType,
+  WorkExperienceBlockItem,
+} from '../../types/cms';
 import { SECTION_REGISTRY, DEFAULT_SECTIONS } from '../../lib/sectionRegistry';
+import { normalizeThemeSections } from '../../lib/themeUtils';
+import { StorageFolder, uploadPortfolioFile } from '../../lib/storage';
+import { BlockListEditor } from '../../components/admin/BlockListEditor';
+import { LEGACY_WORK_EXPERIENCES } from '../../data/LegacyWorkExperiences';
+import { LEGACY_PROJECTS } from '../../data/LegacyProjects';
+
+const DEFAULT_ABOUT_GREETING = "Hi, I'm Diaz";
+const DEFAULT_ABOUT_BIO =
+  'Network Engineer with a 5+ year background in Digital Marketing Agencies, managing Shopify platforms for major brands like Atmos Indonesia, Persebaya Store, Woodka Watch, and 15+ client projects. Now leveraging strong technical and problem-solving skills into enterprise network engineering. Hands-on experience at Digiserve by Telkom Indonesia delivering large-scale SD-WAN configurations for PT Indomarco Prismatama, including leading Phase 2 rollout across Greater Bandung, Sumedang, and Sukabumi. Bringing strong TCP/IP fundamentals and high field adaptability to ISP operations.';
 
 type SidebarView = 'list' | 'add' | 'inspect';
 
@@ -35,7 +52,10 @@ export default function CustomizeSite() {
   const [sidebarView, setSidebarView] = useState<SidebarView>('list');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const [seeding, setSeeding] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     document.title = 'Customize Site | Tamdev CMS';
@@ -86,11 +106,11 @@ export default function CustomizeSite() {
       setTableMissing(false);
       setThemeName(themeData.name);
       setIsThemeLive(themeData.is_live);
-      setSections(
+      const rawSections =
         Array.isArray(themeData.sections) && themeData.sections.length > 0
           ? themeData.sections
-          : DEFAULT_SECTIONS
-      );
+          : DEFAULT_SECTIONS;
+      setSections(normalizeThemeSections(rawSections));
       setLoading(false);
       return;
     }
@@ -103,13 +123,13 @@ export default function CustomizeSite() {
 
     if (error) {
       setTableMissing(true);
-      setSections(DEFAULT_SECTIONS);
+      setSections(normalizeThemeSections(DEFAULT_SECTIONS));
     } else if (data && data.length > 0) {
       setTableMissing(false);
-      setSections(data);
+      setSections(normalizeThemeSections(data));
     } else {
       setTableMissing(false);
-      setSections(DEFAULT_SECTIONS);
+      setSections(normalizeThemeSections(DEFAULT_SECTIONS));
     }
     setLoading(false);
   };
@@ -122,13 +142,23 @@ export default function CustomizeSite() {
     setTimeout(() => setStatusMsg(null), 2500);
   };
 
-  const handleMove = (index: number, direction: -1 | 1) => {
+  const handleMove = (id: string, direction: -1 | 1) => {
+    const header = sections.find((s) => s.type === 'header');
+    const copyright = sections.find((s) => s.type === 'copyright');
+    const middle = sections.filter((s) => s.type !== 'header' && s.type !== 'copyright');
+    const index = middle.findIndex((s) => s.id === id);
     const target = index + direction;
-    if (target < 0 || target >= sections.length) return;
-    const next = [...sections];
-    const [moved] = next.splice(index, 1);
-    next.splice(target, 0, moved);
-    const reordered = next.map((s, i) => ({
+    if (index < 0 || target < 0 || target >= middle.length) return;
+
+    const nextMiddle = [...middle];
+    const [moved] = nextMiddle.splice(index, 1);
+    nextMiddle.splice(target, 0, moved);
+
+    const reordered = [
+      ...(header ? [header] : []),
+      ...nextMiddle,
+      ...(copyright ? [copyright] : []),
+    ].map((s, i) => ({
       ...s,
       sort_order: i,
       has_unpublished_changes: true,
@@ -148,6 +178,7 @@ export default function CustomizeSite() {
 
   const handleAddSection = (type: SectionType) => {
     const def = SECTION_REGISTRY[type];
+    if (def.isStatic) return;
     const uniqueSuffix = Math.floor(Math.random() * 1000);
     const newSection: SiteSection = {
       id: `temp-${Date.now()}-${uniqueSuffix}`,
@@ -165,19 +196,23 @@ export default function CustomizeSite() {
       has_unpublished_changes: true,
     };
 
-    setSections((prev) => [...prev, newSection]);
+    setSections((prev) => normalizeThemeSections([...prev, newSection]));
     setSelectedId(newSection.id);
     setSidebarView('inspect');
   };
 
   const handleRemoveSection = (id: string) => {
+    const target = sections.find((s) => s.id === id);
+    if (target && SECTION_REGISTRY[target.type]?.isStatic) return;
     setSections((prev) =>
       prev
         .filter((s) => s.id !== id)
-        .map((s, i) => ({ ...s, sort_order: i }))
+        .map((s, i) => ({ ...s, sort_order: i, has_unpublished_changes: true }))
     );
-    setSelectedId(null);
-    setSidebarView('list');
+    if (selectedId === id) {
+      setSelectedId(null);
+      setSidebarView('list');
+    }
   };
 
   const updateSelected = (patch: Partial<SiteSection>) => {
@@ -189,7 +224,7 @@ export default function CustomizeSite() {
     );
   };
 
-  const updateSelectedSetting = (key: string, value: string | boolean) => {
+  const updateSelectedSetting = (key: string, value: unknown) => {
     if (!selectedId) return;
     setSections((prev) =>
       prev.map((s) =>
@@ -204,6 +239,128 @@ export default function CustomizeSite() {
     );
   };
 
+  const handleUploadFieldFile = async (
+    fieldKey: string,
+    folder: StorageFolder,
+    file: File | undefined
+  ) => {
+    if (!file) return;
+    setUploadingField(fieldKey);
+    try {
+      const url = await uploadPortfolioFile(file, folder);
+      updateSelectedSetting(fieldKey, url);
+      showToast('File uploaded!');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to upload file';
+      alert(msg);
+    } finally {
+      setUploadingField(null);
+    }
+  };
+
+  const handleSeedFromCms = async () => {
+    if (!selectedSection) return;
+    setSeeding(true);
+    try {
+      const sectionType = selectedSection.type;
+      let nextDraftPatch: Record<string, unknown> = {};
+
+      if (sectionType === 'header') {
+        const { data } = await supabase
+          .from('site_profile')
+          .select('resume_pdf_url')
+          .eq('id', 1)
+          .single();
+        if (data?.resume_pdf_url) {
+          nextDraftPatch = { resumePdfUrl: data.resume_pdf_url };
+        } else {
+          showToast('No legacy resume URL found in Profile.');
+          setSeeding(false);
+          return;
+        }
+      } else if (sectionType === 'about') {
+        const { data } = await supabase
+          .from('site_profile')
+          .select('subheadline, bio, profile_image_url')
+          .eq('id', 1)
+          .single();
+        nextDraftPatch = {
+          subheadline: data?.subheadline || DEFAULT_ABOUT_GREETING,
+          bio: data?.bio || DEFAULT_ABOUT_BIO,
+          profileImageUrl: data?.profile_image_url || '',
+        };
+      } else if (sectionType === 'background') {
+        const { data, error } = await supabase
+          .from('work_experiences')
+          .select('*')
+          .order('sort_order', { ascending: true });
+
+        const rows = !error && data && data.length > 0 ? data : LEGACY_WORK_EXPERIENCES;
+        const mapped: WorkExperienceBlockItem[] = rows.map((row, idx) => ({
+          id: 'id' in row && typeof row.id === 'string' ? row.id : `exp-seed-${Date.now()}-${idx}`,
+          company: row.company,
+          role: row.role,
+          period: row.period,
+          city: row.city || '',
+          description: row.description,
+          is_active: row.is_active ?? true,
+        }));
+        nextDraftPatch = { items: mapped };
+      } else if (sectionType === 'work') {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .order('sort_order', { ascending: true });
+
+        let mapped: ProjectBlockItem[];
+        if (!error && data && data.length > 0) {
+          mapped = data.map((row, idx) => ({
+            id: typeof row.id === 'string' ? row.id : `proj-seed-${Date.now()}-${idx}`,
+            title: row.title || '',
+            category: row.category || '',
+            description: row.description || '',
+            thumbnail_url: row.thumbnail_url || '',
+            live_url: row.live_url ?? null,
+            repo_url: row.repo_url ?? null,
+            tech_stack: Array.isArray(row.tech_stack) ? row.tech_stack : [],
+            is_published: row.is_published ?? true,
+          }));
+        } else {
+          mapped = LEGACY_PROJECTS.map((row, idx) => ({
+            id: `proj-legacy-${Date.now()}-${idx}`,
+            title: row.title,
+            category: row.category,
+            description: row.description,
+            thumbnail_url: row.image,
+            live_url: row.live_url,
+            repo_url: row.repo_url,
+            tech_stack: row.technologies,
+            is_published: true,
+          }));
+        }
+        nextDraftPatch = { items: mapped };
+      }
+
+      setSections((prev) =>
+        prev.map((s) =>
+          s.id === selectedSection.id
+            ? {
+                ...s,
+                draft_settings: { ...s.draft_settings, ...nextDraftPatch },
+                has_unpublished_changes: true,
+              }
+            : s
+        )
+      );
+      showToast('Seeded from existing CMS data!');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to seed CMS data';
+      alert(msg);
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const persistSections = async (publish: boolean) => {
     if (tableMissing) {
       alert('Please run supabase/migrations/20261125_create_site_themes.sql in Supabase first.');
@@ -213,7 +370,7 @@ export default function CustomizeSite() {
     publish ? setPublishing(true) : setSaving(true);
 
     try {
-      const normalized = sections.map((s, i) => ({
+      const normalized = normalizeThemeSections(sections).map((s, i) => ({
         ...s,
         sort_order: i,
         published_settings: publish ? s.draft_settings : s.published_settings,
@@ -288,8 +445,18 @@ export default function CustomizeSite() {
     }
   };
 
-  const portfolioDefs = Object.values(SECTION_REGISTRY).filter((d) => d.category === 'portfolio');
-  const customDefs = Object.values(SECTION_REGISTRY).filter((d) => d.category === 'custom');
+  const portfolioDefs = Object.values(SECTION_REGISTRY).filter(
+    (d) => !d.isStatic && d.category === 'portfolio'
+  );
+  const customDefs = Object.values(SECTION_REGISTRY).filter(
+    (d) => !d.isStatic && d.category === 'custom'
+  );
+
+  const headerSection = sections.find((s) => s.type === 'header');
+  const copyrightSection = sections.find((s) => s.type === 'copyright');
+  const middleSections = sections.filter(
+    (s) => s.type !== 'header' && s.type !== 'copyright'
+  );
 
   return (
     <div className="h-screen flex flex-col bg-neutral-950 text-neutral-100 overflow-hidden">
@@ -383,38 +550,148 @@ export default function CustomizeSite() {
         {/* Left Sidebar */}
         <aside className="w-80 shrink-0 border-r border-neutral-800 bg-neutral-900 flex flex-col overflow-y-auto">
           {sidebarView === 'list' && (
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
-                  Page Sections ({sections.length})
-                </span>
-              </div>
-
+            <div className="p-4 space-y-5">
               {loading ? (
                 <p className="text-xs text-neutral-500">Loading sections...</p>
               ) : (
-                <div className="space-y-1.5">
-                  {sections.map((sec, idx) => {
-                    const def = SECTION_REGISTRY[sec.type];
-                    return (
+                <>
+                  {/* Top Pinned Static Header */}
+                  {headerSection && (
+                    <div className="space-y-1.5">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+                        Static Header
+                      </span>
                       <div
-                        key={sec.id}
-                        className={`group flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border transition cursor-pointer ${
-                          sec.is_visible
-                            ? 'bg-neutral-800/60 border-neutral-800 hover:border-neutral-700'
-                            : 'bg-neutral-900/40 border-neutral-800/60 opacity-55'
-                        }`}
                         onClick={() => {
-                          setSelectedId(sec.id);
+                          setSelectedId(headerSection.id);
                           setSidebarView('inspect');
                         }}
+                        className="group flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border bg-neutral-800/40 border-neutral-800 hover:border-orange-500/60 transition cursor-pointer"
                       >
                         <div className="min-w-0 flex-1">
-                          <div className="text-xs font-semibold text-white truncate">
-                            {sec.nav_label || def?.name}
+                          <div className="text-xs font-semibold text-white truncate flex items-center gap-1.5">
+                            <Lock size={11} className="text-orange-400 shrink-0" />
+                            <span>{SECTION_REGISTRY.header.name}</span>
                           </div>
                           <div className="text-[10px] text-neutral-400 truncate">
-                            {def?.name} · #{sec.anchor_id}
+                            Pinned top navigation bar
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Middle Reorderable Sections */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+                        Sections ({middleSections.length})
+                      </span>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      {middleSections.map((sec, idx) => {
+                        const def = SECTION_REGISTRY[sec.type];
+                        return (
+                          <div
+                            key={sec.id}
+                            className={`group flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border transition cursor-pointer ${
+                              sec.is_visible
+                                ? 'bg-neutral-800/60 border-neutral-800 hover:border-neutral-700'
+                                : 'bg-neutral-900/40 border-neutral-800/60 opacity-55'
+                            }`}
+                            onClick={() => {
+                              setSelectedId(sec.id);
+                              setSidebarView('inspect');
+                            }}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-semibold text-white truncate">
+                                {sec.nav_label || def?.name}
+                              </div>
+                              <div className="text-[10px] text-neutral-400 truncate">
+                                {def?.name} · #{sec.anchor_id}
+                              </div>
+                            </div>
+
+                            <div
+                              className="flex items-center gap-0.5 shrink-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => handleMove(sec.id, -1)}
+                                disabled={idx === 0}
+                                className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-700 disabled:opacity-30"
+                                title="Move Up"
+                              >
+                                <ArrowUp size={12} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMove(sec.id, 1)}
+                                disabled={idx === middleSections.length - 1}
+                                className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-700 disabled:opacity-30"
+                                title="Move Down"
+                              >
+                                <ArrowDown size={12} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleVisibility(sec.id)}
+                                className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-700"
+                                title={sec.is_visible ? 'Hide section' : 'Show section'}
+                              >
+                                {sec.is_visible ? <Eye size={13} /> : <EyeOff size={13} />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveSection(sec.id)}
+                                className="p-1 rounded text-neutral-400 hover:text-red-400 hover:bg-neutral-700"
+                                title="Delete section"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setSidebarView('add')}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-neutral-700 hover:border-orange-500 text-xs font-semibold text-orange-400 hover:text-orange-300 hover:bg-orange-500/5 transition"
+                    >
+                      <Plus size={14} />
+                      Add Section
+                    </button>
+                  </div>
+
+                  {/* Bottom Pinned Static Copyright */}
+                  {copyrightSection && (
+                    <div className="space-y-1.5 pt-2 border-t border-neutral-800/80">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+                        Static Copyright
+                      </span>
+                      <div
+                        onClick={() => {
+                          setSelectedId(copyrightSection.id);
+                          setSidebarView('inspect');
+                        }}
+                        className={`group flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border transition cursor-pointer ${
+                          copyrightSection.is_visible
+                            ? 'bg-neutral-800/40 border-neutral-800 hover:border-orange-500/60'
+                            : 'bg-neutral-900/40 border-neutral-800/60 opacity-55'
+                        }`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-semibold text-white truncate flex items-center gap-1.5">
+                            <Lock size={11} className="text-orange-400 shrink-0" />
+                            <span>{SECTION_REGISTRY.copyright.name}</span>
+                          </div>
+                          <div className="text-[10px] text-neutral-400 truncate">
+                            Pinned bottom footer
                           </div>
                         </div>
 
@@ -424,45 +701,22 @@ export default function CustomizeSite() {
                         >
                           <button
                             type="button"
-                            onClick={() => handleMove(idx, -1)}
-                            disabled={idx === 0}
-                            className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-700 disabled:opacity-30"
-                            title="Move Up"
-                          >
-                            <ArrowUp size={12} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleMove(idx, 1)}
-                            disabled={idx === sections.length - 1}
-                            className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-700 disabled:opacity-30"
-                            title="Move Down"
-                          >
-                            <ArrowDown size={12} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleToggleVisibility(sec.id)}
+                            onClick={() => handleToggleVisibility(copyrightSection.id)}
                             className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-700"
-                            title={sec.is_visible ? 'Hide section' : 'Show section'}
+                            title={copyrightSection.is_visible ? 'Hide footer' : 'Show footer'}
                           >
-                            {sec.is_visible ? <Eye size={13} /> : <EyeOff size={13} />}
+                            {copyrightSection.is_visible ? (
+                              <Eye size={13} />
+                            ) : (
+                              <EyeOff size={13} />
+                            )}
                           </button>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  )}
+                </>
               )}
-
-              <button
-                type="button"
-                onClick={() => setSidebarView('add')}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-neutral-700 hover:border-orange-500 text-xs font-semibold text-orange-400 hover:text-orange-300 hover:bg-orange-500/5 transition"
-              >
-                <Plus size={14} />
-                Add Section
-              </button>
             </div>
           )}
 
@@ -519,112 +773,265 @@ export default function CustomizeSite() {
             </div>
           )}
 
-          {sidebarView === 'inspect' && selectedSection && (
-            <div className="p-4 space-y-5">
-              <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
-                <button
-                  type="button"
-                  onClick={() => setSidebarView('list')}
-                  className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white"
-                >
-                  <ArrowLeft size={13} /> Sections
-                </button>
-                <span className="text-xs font-semibold text-orange-400">
-                  {SECTION_REGISTRY[selectedSection.type]?.name}
-                </span>
-              </div>
+          {sidebarView === 'inspect' && selectedSection && (() => {
+            const selectedDef = SECTION_REGISTRY[selectedSection.type];
+            const isStatic = Boolean(selectedDef?.isStatic);
+            const canSeedFromCms = ['about', 'background', 'work', 'header'].includes(
+              selectedSection.type
+            );
 
-              {/* Menu & Visibility */}
-              <div className="space-y-3">
-                <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
-                  Menu & Visibility
-                </h4>
-
-                <div>
-                  <label className="block text-xs text-neutral-400 mb-1">Nav Menu Label</label>
-                  <input
-                    type="text"
-                    value={selectedSection.nav_label}
-                    onChange={(e) => updateSelected({ nav_label: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-xs text-white focus:outline-none focus:border-orange-500"
-                  />
+            return (
+              <div className="p-4 space-y-5">
+                <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
+                  <button
+                    type="button"
+                    onClick={() => setSidebarView('list')}
+                    className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white"
+                  >
+                    <ArrowLeft size={13} /> Sections
+                  </button>
+                  <span className="text-xs font-semibold text-orange-400">
+                    {selectedDef?.name}
+                  </span>
                 </div>
 
-                <div>
-                  <label className="block text-xs text-neutral-400 mb-1">Anchor ID</label>
-                  <input
-                    type="text"
-                    value={selectedSection.anchor_id}
-                    onChange={(e) =>
-                      updateSelected({
-                        anchor_id: e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ''),
-                      })
-                    }
-                    className="w-full px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-xs font-mono text-white focus:outline-none focus:border-orange-500"
-                  />
-                </div>
+                {/* Seed from existing CMS data */}
+                {canSeedFromCms && (
+                  <div className="rounded-lg border border-neutral-800 bg-neutral-800/40 p-3 space-y-2">
+                    <p className="text-[11px] text-neutral-400">
+                      Populate this section from existing CMS tables or legacy defaults.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleSeedFromCms}
+                      disabled={seeding}
+                      className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-xs font-medium text-orange-300 disabled:opacity-50 transition"
+                    >
+                      <Database size={13} />
+                      {seeding ? 'Seeding...' : 'Seed from existing CMS data'}
+                    </button>
+                  </div>
+                )}
 
-                <label className="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedSection.show_in_nav}
-                    onChange={(e) => updateSelected({ show_in_nav: e.target.checked })}
-                    className="rounded accent-orange-600"
-                  />
-                  Show in Navigation Menu
-                </label>
+                {/* Menu & Visibility */}
+                {(!isStatic || selectedSection.type === 'copyright') && (
+                  <div className="space-y-3">
+                    <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+                      {isStatic ? 'Visibility' : 'Menu & Visibility'}
+                    </h4>
 
-                <label className="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedSection.is_visible}
-                    onChange={(e) => updateSelected({ is_visible: e.target.checked })}
-                    className="rounded accent-orange-600"
-                  />
-                  Visible on Page
-                </label>
-              </div>
+                    {!isStatic && (
+                      <>
+                        <div>
+                          <label className="block text-xs text-neutral-400 mb-1">
+                            Nav Menu Label
+                          </label>
+                          <input
+                            type="text"
+                            value={selectedSection.nav_label}
+                            onChange={(e) => updateSelected({ nav_label: e.target.value })}
+                            className="w-full px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-xs text-white focus:outline-none focus:border-orange-500"
+                          />
+                        </div>
 
-              {/* Schema-driven Content Fields */}
-              {SECTION_REGISTRY[selectedSection.type]?.fields.length > 0 && (
-                <div className="space-y-3 border-t border-neutral-800 pt-4">
-                  <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
-                    Section Settings
-                  </h4>
+                        <div>
+                          <label className="block text-xs text-neutral-400 mb-1">
+                            Anchor ID
+                          </label>
+                          <input
+                            type="text"
+                            value={selectedSection.anchor_id}
+                            onChange={(e) =>
+                              updateSelected({
+                                anchor_id: e.target.value
+                                  .toLowerCase()
+                                  .replace(/[^a-z0-9-_]/g, ''),
+                              })
+                            }
+                            className="w-full px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-xs font-mono text-white focus:outline-none focus:border-orange-500"
+                          />
+                        </div>
 
-                  {SECTION_REGISTRY[selectedSection.type].fields.map((field) => {
-                    const val =
-                      selectedSection.draft_settings[field.key] ??
-                      SECTION_REGISTRY[selectedSection.type].defaultSettings[field.key] ??
-                      '';
-
-                    if (field.type === 'toggle') {
-                      return (
-                        <label
-                          key={field.key}
-                          className="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer"
-                        >
+                        <label className="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer">
                           <input
                             type="checkbox"
-                            checked={Boolean(val)}
+                            checked={selectedSection.show_in_nav}
                             onChange={(e) =>
-                              updateSelectedSetting(field.key, e.target.checked)
+                              updateSelected({ show_in_nav: e.target.checked })
                             }
                             className="rounded accent-orange-600"
                           />
-                          {field.label}
+                          Show in Navigation Menu
                         </label>
-                      );
-                    }
+                      </>
+                    )}
 
-                    if (field.type === 'textarea') {
+                    <label className="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedSection.is_visible}
+                        onChange={(e) => updateSelected({ is_visible: e.target.checked })}
+                        className="rounded accent-orange-600"
+                      />
+                      Visible on Page
+                    </label>
+                  </div>
+                )}
+
+                {/* Schema-driven Content Fields */}
+                {selectedDef?.fields.length > 0 && (
+                  <div className="space-y-3 border-t border-neutral-800 pt-4">
+                    <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+                      Section Settings
+                    </h4>
+
+                    {selectedDef.fields.map((field) => {
+                      const val =
+                        selectedSection.draft_settings[field.key] ??
+                        selectedDef.defaultSettings[field.key] ??
+                        (field.type === 'block_list' ? [] : '');
+
+                      if (field.type === 'toggle') {
+                        return (
+                          <label
+                            key={field.key}
+                            className="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={Boolean(val)}
+                              onChange={(e) =>
+                                updateSelectedSetting(field.key, e.target.checked)
+                              }
+                              className="rounded accent-orange-600"
+                            />
+                            {field.label}
+                          </label>
+                        );
+                      }
+
+                      if (field.type === 'select') {
+                        return (
+                          <div key={field.key}>
+                            <label className="block text-xs text-neutral-400 mb-1">
+                              {field.label}
+                            </label>
+                            <select
+                              value={String(val)}
+                              onChange={(e) =>
+                                updateSelectedSetting(field.key, e.target.value)
+                              }
+                              className="w-full px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-xs text-white focus:outline-none focus:border-orange-500"
+                            >
+                              {(field.options || []).map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        );
+                      }
+
+                      if (field.type === 'image' || field.type === 'file') {
+                        const isPdf = field.type === 'file';
+                        const folder: StorageFolder =
+                          field.uploadFolder || (isPdf ? 'resume' : 'logos');
+                        const accept = isPdf ? 'application/pdf,.pdf' : 'image/*';
+                        return (
+                          <div key={field.key} className="space-y-1.5">
+                            <label className="block text-xs text-neutral-400">
+                              {field.label}
+                            </label>
+                            <div className="flex gap-1.5">
+                              <input
+                                type="text"
+                                value={String(val)}
+                                placeholder={field.placeholder}
+                                onChange={(e) =>
+                                  updateSelectedSetting(field.key, e.target.value)
+                                }
+                                className="w-full px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-xs text-white focus:outline-none focus:border-orange-500"
+                              />
+                              <input
+                                ref={(el) => {
+                                  fileInputRefs.current[field.key] = el;
+                                }}
+                                type="file"
+                                accept={accept}
+                                className="hidden"
+                                onChange={(e) => {
+                                  handleUploadFieldFile(
+                                    field.key,
+                                    folder,
+                                    e.target.files?.[0]
+                                  );
+                                  e.target.value = '';
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => fileInputRefs.current[field.key]?.click()}
+                                disabled={uploadingField === field.key}
+                                className="px-2.5 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-xs text-white shrink-0 flex items-center gap-1 disabled:opacity-50"
+                                title={isPdf ? 'Upload PDF' : 'Upload Image'}
+                              >
+                                <Upload size={12} />
+                                {uploadingField === field.key ? '...' : 'Upload'}
+                              </button>
+                            </div>
+                            {field.type === 'image' && typeof val === 'string' && val && (
+                              <img
+                                src={val}
+                                alt={field.label}
+                                className="h-12 w-auto rounded border border-neutral-800 object-contain bg-neutral-950 p-1"
+                              />
+                            )}
+                          </div>
+                        );
+                      }
+
+                      if (field.type === 'block_list' && field.blockType) {
+                        return (
+                          <div key={field.key} className="space-y-1.5">
+                            <label className="block text-xs text-neutral-400">
+                              {field.label}
+                            </label>
+                            <BlockListEditor
+                              blockType={field.blockType}
+                              items={Array.isArray(val) ? val : []}
+                              onChange={(next) => updateSelectedSetting(field.key, next)}
+                            />
+                          </div>
+                        );
+                      }
+
+                      if (field.type === 'textarea') {
+                        return (
+                          <div key={field.key}>
+                            <label className="block text-xs text-neutral-400 mb-1">
+                              {field.label}
+                            </label>
+                            <textarea
+                              rows={4}
+                              value={String(val)}
+                              placeholder={field.placeholder}
+                              onChange={(e) =>
+                                updateSelectedSetting(field.key, e.target.value)
+                              }
+                              className="w-full px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-xs text-white focus:outline-none focus:border-orange-500"
+                            />
+                          </div>
+                        );
+                      }
+
                       return (
                         <div key={field.key}>
                           <label className="block text-xs text-neutral-400 mb-1">
                             {field.label}
                           </label>
-                          <textarea
-                            rows={4}
+                          <input
+                            type="text"
                             value={String(val)}
                             placeholder={field.placeholder}
                             onChange={(e) =>
@@ -634,41 +1041,26 @@ export default function CustomizeSite() {
                           />
                         </div>
                       );
-                    }
+                    })}
+                  </div>
+                )}
 
-                    return (
-                      <div key={field.key}>
-                        <label className="block text-xs text-neutral-400 mb-1">
-                          {field.label}
-                        </label>
-                        <input
-                          type="text"
-                          value={String(val)}
-                          placeholder={field.placeholder}
-                          onChange={(e) =>
-                            updateSelectedSetting(field.key, e.target.value)
-                          }
-                          className="w-full px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-xs text-white focus:outline-none focus:border-orange-500"
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Remove Section */}
-              <div className="border-t border-neutral-800 pt-4">
-                <button
-                  type="button"
-                  onClick={() => handleRemoveSection(selectedSection.id)}
-                  className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-medium transition"
-                >
-                  <Trash2 size={13} />
-                  Remove Section
-                </button>
+                {/* Remove Section */}
+                {!isStatic && (
+                  <div className="border-t border-neutral-800 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSection(selectedSection.id)}
+                      className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-medium transition"
+                    >
+                      <Trash2 size={13} />
+                      Remove Section
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
         </aside>
 
         {/* Right Live Preview Canvas (iframe for authentic responsive breakpoints) */}
