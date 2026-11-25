@@ -1,7 +1,7 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Lock, Mail, Terminal } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 export default function Login() {
@@ -32,94 +32,60 @@ export default function Login() {
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-neutral-950 text-white">
-      {/* Left Editorial Panel (Desktop) */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between p-12 border-r border-neutral-800/80 bg-neutral-950">
-        {/* Ambient orange glow & subtle grid */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-orange-600/15 blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-32 right-0 h-96 w-96 rounded-full bg-orange-500/10 blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage:
-              'linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)',
-            backgroundSize: '48px 48px',
-          }}
-        />
+    <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center bg-neutral-950 text-white px-4 py-12">
+      {/* Subtle dot-matrix background */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-[0.07]"
+        style={{
+          backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+      />
 
-        {/* Top Brand */}
-        <div className="relative z-10 flex items-center gap-3">
-          <span className="font-gambarino text-2xl text-orange-600 tracking-tight">
-            Tamdev.
-          </span>
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-orange-600/15 text-orange-400 border border-orange-500/30">
-            CMS
-          </span>
-        </div>
+      {/* Ambient orange spotlight behind card */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full bg-orange-600/15 blur-3xl"
+      />
 
-        {/* Centerpiece Copy */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.25, 0.8, 0.25, 1] }}
-          className="relative z-10 max-w-md space-y-4"
-        >
-          <p className="font-mono text-xs uppercase tracking-widest text-orange-500">
-            Portfolio Studio
-          </p>
-          <h1 className="font-gambarino text-5xl leading-[1.08] text-white">
-            Build With <span className="text-orange-600">Passion.</span>
-          </h1>
-          <p className="font-mono text-sm text-neutral-400 leading-relaxed">
-            Customize themes, manage sections, and publish updates to your live portfolio in real time.
-          </p>
-        </motion.div>
-
-        {/* Bottom Status */}
-        <div className="relative z-10 flex items-center justify-between font-mono text-xs text-neutral-500">
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: [0.25, 0.8, 0.25, 1] }}
+        className="relative z-10 w-full max-w-sm space-y-6"
+      >
+        {/* Brand Header above card */}
+        <div className="flex flex-col items-center text-center space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Admin Portal</span>
-          </div>
-          <span>© 2026 Tamdev.</span>
-        </div>
-      </div>
-
-      {/* Right Login Form Panel */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 py-12 bg-neutral-950 lg:bg-neutral-900/30">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.25, 0.8, 0.25, 1] }}
-          className="w-full max-w-sm space-y-7"
-        >
-          {/* Mobile Brand Header */}
-          <div className="lg:hidden flex items-center gap-2.5">
-            <span className="font-gambarino text-2xl text-orange-600 tracking-tight">
+            <span className="font-gambarino text-3xl text-orange-600 tracking-tight">
               Tamdev.
             </span>
             <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-orange-600/15 text-orange-400 border border-orange-500/30">
               CMS
             </span>
           </div>
+          <p className="font-mono text-xs text-neutral-500">
+            Admin Studio · Sign in to continue
+          </p>
+        </div>
 
-          <div className="space-y-1.5">
-            <h2 className="text-2xl font-semibold tracking-tight text-white">
-              Welcome back
-            </h2>
-            <p className="text-xs font-mono text-neutral-400">
-              Sign in with your admin credentials to continue.
-            </p>
+        {/* Studio Card */}
+        <div className="rounded-2xl bg-neutral-900/90 border border-neutral-800 shadow-2xl backdrop-blur-sm overflow-hidden">
+          {/* Terminal-style header bar */}
+          <div className="flex items-center justify-between px-5 py-3 border-b border-neutral-800/80 bg-neutral-900">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-neutral-700" />
+              <span className="h-2.5 w-2.5 rounded-full bg-neutral-700" />
+              <span className="h-2.5 w-2.5 rounded-full bg-orange-600/80" />
+            </div>
+            <div className="flex items-center gap-1.5 font-mono text-[11px] text-neutral-500">
+              <Terminal size={12} className="text-orange-500" />
+              <span>auth@tamdev-cms</span>
+            </div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="p-6 space-y-4">
             <AnimatePresence>
               {error && (
                 <motion.div
@@ -153,7 +119,7 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-lg bg-neutral-900 border border-neutral-800 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-orange-500 transition-colors"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-lg bg-neutral-950/70 border border-neutral-800 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-orange-500 transition-colors"
                 />
               </div>
             </div>
@@ -178,7 +144,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-neutral-900 border border-neutral-800 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-orange-500 transition-colors"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-neutral-950/70 border border-neutral-800 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-orange-500 transition-colors"
                 />
                 <button
                   type="button"
@@ -200,18 +166,20 @@ export default function Login() {
               {!loading && <ArrowRight size={15} />}
             </button>
           </form>
+        </div>
 
-          <div className="pt-2 border-t border-neutral-800/80">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-400 hover:text-orange-500 transition-colors"
-            >
-              <ArrowLeft size={13} />
-              <span>Back to portfolio</span>
-            </Link>
-          </div>
-        </motion.div>
-      </div>
+        {/* Footer links */}
+        <div className="flex items-center justify-between px-1 font-mono text-xs text-neutral-500">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 hover:text-orange-500 transition-colors"
+          >
+            <ArrowLeft size={13} />
+            <span>Back to portfolio</span>
+          </Link>
+          <span>© 2026 Tamdev.</span>
+        </div>
+      </motion.div>
     </div>
   );
 }
