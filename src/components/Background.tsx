@@ -1,30 +1,8 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-
-const workExperiences = [
-  {
-    company: "Digiserve by Telkom Indonesia",
-    role: "Intern Network Engineer (SD-WAN Project)",
-    period: "Sep 2026 - Present",
-    city: "Bandung, Indonesia",
-    description: "Installed, replaced, and configured SD-WAN hardware for Digiserve enterprise clients at PT Indomarco Prismatama retail sites, managing network deployment projects across Greater Bandung, Priangan Timur, Sumedang, and Sukabumi. Responsible for cable routing, labeling, server rack setup, and testing network connectivity and failover performance while collaborating with the central NOC team for remote device provisioning and creating accurate work completion reports.",
-  },
-];
-
-const anotherWorkExperiences = [
-  // {
-  //   company: "PT. XLSmart Telecom Sejahtera (Legacy Smartfren)",
-  //   role: "Sales Direct Selling Agent",
-  //   period: "May 2025 - Jun 2026",
-  //   description: "Experienced in intensive fieldwork, maintaining strong customer communication, and resolving on-site issues, while achieving top sales performance in the Andir and Sukajadi areas twice.",
-  // },
-  {
-    company: "Boleh Dicoba Digital",
-    role: "Web Developer",
-    period: "Sep 2019 - Feb 2025",
-    city: "Bandung, Indonesia",
-    description: "Designing and customizing client e-commerce websites using Shopify and Liquid templates from brief to deployment, consistently optimizing page load performance to meet platform standards while redesigning interfaces based on Figma mockups, collaborating with design teams, resolving technical issues, and documenting troubleshooting procedures.",
-  }
-];
+import { supabase } from "../lib/supabase";
+import { WorkExperience, WorkExperienceBlockItem } from "../types/cms";
+import { LEGACY_WORK_EXPERIENCES } from "../data/LegacyWorkExperiences";
 
 // Helper function to calculate duration from a period string (e.g. "Sep 2019 - Feb 2025" -> "5 yrs 6 mos")
 function getDuration(periodStr: string): string {
@@ -73,10 +51,66 @@ function getDuration(periodStr: string): string {
   return [yearText, monthText].filter(Boolean).join(" ");
 }
 
-export default function Background() {
+interface BackgroundProps {
+  id?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  settings?: Record<string, any>;
+}
+
+export default function Background({ id = 'background', settings }: BackgroundProps) {
+  const heading =
+    typeof settings?.heading === 'string' && settings.heading.trim().length > 0
+      ? settings.heading
+      : 'WORK EXPERIENCE';
+  const [legacyExperiences, setLegacyExperiences] = useState<WorkExperience[]>([]);
+  const [loading, setLoading] = useState(settings?.items === undefined);
+
+  const hasSeededItems = Array.isArray(settings?.items);
+
+  useEffect(() => {
+    if (hasSeededItems) {
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    supabase
+      .from("work_experiences")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (!error && data && data.length > 0) {
+          setLegacyExperiences(data);
+        } else {
+          // Fallback to legacy static data if Supabase is empty or unreachable
+          setLegacyExperiences(
+            LEGACY_WORK_EXPERIENCES.map((e, i) => ({
+              ...e,
+              id: String(i),
+            }))
+          );
+        }
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hasSeededItems]);
+
+  const experiences: Array<WorkExperience | WorkExperienceBlockItem> = hasSeededItems
+    ? (settings!.items as WorkExperienceBlockItem[]).filter((item) => item.is_active !== false)
+    : legacyExperiences;
+
+  const isLoading = hasSeededItems ? false : loading;
+
   return (
     <section
-      id="background"
+      id={id}
       className="min-h-screen w-full flex flex-col items-start justify-center bg-neutral-200 dark:bg-black transition-colors px-6 sm:px-8 py-12 sm:py-8"
       aria-labelledby="experience-title"
     >
@@ -96,101 +130,52 @@ export default function Background() {
             transition={{ duration: 0.7, ease: 'easeOut' }}
           >
             <h3 className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-6 text-orange-600 dark:text-orange-600 tracking-wide">
-              WORK EXPERIENCE
+              {heading}
             </h3>
             <div className="relative pl-6 sm:pl-8 border-l-2 border-orange-500/30 flex flex-col gap-10">
-              {workExperiences.map((exp, index) => {
-                const duration = getDuration(exp.period);
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -12 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="relative flex flex-col gap-2 group"
-                  >
-                    {/* Animated Timeline Node */}
-                    <span className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-3.5 h-3.5 rounded-full bg-orange-600 ring-4 ring-neutral-200 dark:ring-black group-hover:scale-125 transition-transform duration-300" />
-                    
-                    <div className="space-y-2">
-                      <div className="text-base text-orange-600 dark:text-orange-600 font-mono font-medium">{exp.company}</div>
-                      <div className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white leading-tight">{exp.role}</div>
-                      <div className="flex flex-wrap items-center font-mono gap-2 text-xs text-orange-600/90 dark:text-orange-400 mb-1">
-                        <span>{exp.period}</span>
-                        {duration && (
-                          <>
-                            <span>•</span>
-                            <span>{duration}</span>
-                          </>
-                        )}
-                        {exp.city && (
-                          <>
-                            <span>•</span>
-                            <span>{exp.city}</span>
-                          </>
-                        )}
-                      </div>
-                      <div className="text-neutral-800 font-mono dark:text-neutral-300 text-sm max-w-2xl leading-relaxed mt-2">
-                        {exp.description}
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
+              {isLoading ? (
+                <div className="text-neutral-500 text-sm font-mono animate-pulse">Loading...</div>
+              ) : (
+                experiences.map((exp, index) => {
+                  const duration = getDuration(exp.period);
+                  return (
+                    <motion.div
+                      key={exp.id}
+                      initial={{ opacity: 0, x: -12 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true, amount: 0.2 }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
+                      className="relative flex flex-col gap-2 group"
+                    >
+                      {/* Animated Timeline Node */}
+                      <span className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-3.5 h-3.5 rounded-full bg-orange-600 ring-4 ring-neutral-200 dark:ring-black group-hover:scale-125 transition-transform duration-300" />
 
-          {/* Another Work Experience Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.15 }}
-            transition={{ duration: 0.7, ease: 'easeOut' }}
-          >
-            <h3 className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-6 text-orange-600 dark:text-orange-600 tracking-wide">
-              ANOTHER WORK EXPERIENCE
-            </h3>
-            <div className="relative pl-6 sm:pl-8 border-l-2 border-orange-500/30 flex flex-col gap-10">
-              {anotherWorkExperiences.map((exp, index) => {
-                const duration = getDuration(exp.period);
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -12 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="relative flex flex-col gap-2 group"
-                  >
-                    {/* Animated Timeline Node */}
-                    <span className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-3.5 h-3.5 rounded-full bg-orange-600 ring-4 ring-neutral-200 dark:ring-black group-hover:scale-125 transition-transform duration-300" />
-
-                    <div className="space-y-2">
-                      <div className="text-base text-orange-600 dark:text-orange-600 font-mono font-medium">{exp.company}</div>
-                      <div className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white leading-tight">{exp.role}</div>
-                      <div className="flex flex-wrap items-center font-mono gap-2 text-xs text-orange-600/90 dark:text-orange-400 mb-1">
-                        <span>{exp.period}</span>
-                        {duration && (
-                          <>
-                            <span>•</span>
-                            <span>{duration}</span>
-                          </>
-                        )}
-                        {exp.city && (
-                          <>
-                            <span>•</span>
-                            <span>{exp.city}</span>
-                          </>
-                        )}
+                      <div className="space-y-2">
+                        <div className="text-base text-orange-600 dark:text-orange-600 font-mono font-medium">{exp.company}</div>
+                        <div className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white leading-tight">{exp.role}</div>
+                        <div className="flex flex-wrap items-center font-mono gap-2 text-xs text-orange-600/90 dark:text-orange-400 mb-1">
+                          <span>{exp.period}</span>
+                          {duration && (
+                            <>
+                              <span>•</span>
+                              <span>{duration}</span>
+                            </>
+                          )}
+                          {exp.city && (
+                            <>
+                              <span>•</span>
+                              <span>{exp.city}</span>
+                            </>
+                          )}
+                        </div>
+                        <div className="text-neutral-800 font-mono dark:text-neutral-300 text-sm max-w-2xl leading-relaxed mt-2">
+                          {exp.description}
+                        </div>
                       </div>
-                      <div className="text-neutral-800 font-mono dark:text-neutral-300 text-sm max-w-2xl leading-relaxed mt-2">
-                        {exp.description}
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+                    </motion.div>
+                  );
+                })
+              )}
             </div>
           </motion.div>
         </div>

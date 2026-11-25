@@ -33,10 +33,25 @@ const lineVariants = {
   },
 };
 
-export default function Hero() {
-  const [headline, setHeadline] = useState(DEFAULT_HEADLINE);
+interface HeroProps {
+  id?: string;
+  settings?: Record<string, string | boolean>;
+}
+
+export default function Hero({ id = 'intro', settings }: HeroProps) {
+  const customHeadline =
+    typeof settings?.headline === 'string' && settings.headline.trim().length > 0
+      ? settings.headline
+      : null;
+
+  const [headline, setHeadline] = useState(customHeadline ?? DEFAULT_HEADLINE);
 
   useEffect(() => {
+    if (customHeadline) {
+      setHeadline(customHeadline);
+      return;
+    }
+
     async function loadHero() {
       const { data, error } = await supabase
         .from('site_profile')
@@ -49,13 +64,13 @@ export default function Hero() {
       }
     }
     loadHero();
-  }, []);
+  }, [customHeadline]);
 
   const headlineLines = headline.split('\n');
 
   return (
     <section
-      id="intro"
+      id={id}
       aria-label="Hero section"
       className="min-h-screen w-full flex flex-col items-start justify-center bg-neutral-200 dark:bg-black transition-colors px-6 md:px-8 py-16"
     >

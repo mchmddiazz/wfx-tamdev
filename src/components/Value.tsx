@@ -2,7 +2,7 @@ import { motion, useAnimation } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 import { useInView } from 'framer-motion';
 
-export default function Value() {
+export default function Value({ id = 'values' }: { id?: string }) {
   const values = [
     {
       title: "Innovation",
@@ -55,7 +55,7 @@ export default function Value() {
 
   return (
     <section
-      id="values"
+      id={id}
       aria-label="Core values section"
       ref={sectionRef}
       className="min-h-screen w-full flex flex-col items-start justify-center bg-neutral-200 dark:bg-black transition-colors px-6 sm:px-8 py-12 sm:py-8"
