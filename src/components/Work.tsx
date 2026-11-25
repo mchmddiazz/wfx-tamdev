@@ -180,7 +180,7 @@ function ProjectCard({ project, isMobile }: { project: DisplayProject; isMobile:
   );
 }
 
-export default function Work() {
+export default function Work({ id = "work" }: { id?: string }) {
   const [isMobile, setIsMobile] = useState(false);
   const [projects, setProjects] = useState<DisplayProject[]>(FALLBACK_PROJECTS);
 
@@ -219,7 +219,7 @@ export default function Work() {
 
   return (
     <motion.section
-      id="work"
+      id={id}
       className="min-h-screen w-full flex flex-col items-center justify-center bg-neutral-200 dark:bg-black transition-colors py-12 sm:py-8 md:pl-[10%]"
       aria-labelledby="portfolio-title"
       initial={{ opacity: 0 }}

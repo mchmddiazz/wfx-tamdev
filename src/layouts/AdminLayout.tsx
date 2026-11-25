@@ -1,13 +1,28 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  FolderKanban,
+  UserCircle,
+  Share2,
+  Briefcase,
+  Paintbrush,
+  ExternalLink,
+  LogOut,
+  Menu,
+  X,
+} from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-const NAV_ITEMS = [
-  { to: '/admin/projects', label: 'Projects' },
-  { to: '/admin/profile', label: 'Profile & Resume' },
-  { to: '/admin/socials', label: 'Social Links' },
-  { to: '/admin/experience', label: 'Work Experience' },
+const CONTENT_NAV = [
+  { to: '/admin/projects', label: 'Projects', icon: FolderKanban },
+  { to: '/admin/profile', label: 'Profile & Resume', icon: UserCircle },
+  { to: '/admin/socials', label: 'Social Links', icon: Share2 },
+  { to: '/admin/experience', label: 'Work Experience', icon: Briefcase },
+];
+
+const SITE_NAV = [
+  { to: '/admin/customize', label: 'Customize', icon: Paintbrush },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
@@ -15,6 +30,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/profile': 'Profile & Resume | Tamdev CMS',
   '/admin/socials': 'Social Links | Tamdev CMS',
   '/admin/experience': 'Work Experience | Tamdev CMS',
+  '/admin/customize': 'Online Site & Themes | Tamdev CMS',
 };
 
 export function AdminLayout() {
@@ -23,7 +39,6 @@ export function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
-  // Fetch current authenticated user for mobile drawer header
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserEmail(data.user?.email ?? null);
@@ -37,17 +52,15 @@ export function AdminLayout() {
       authListener.subscription.unsubscribe();
     };
   }, []);
-  
+
   useEffect(() => {
     document.title = PAGE_TITLES[location.pathname] ?? 'Admin | Tamdev CMS';
   }, [location.pathname]);
 
-  // Close mobile sidebar automatically when route changes
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location.pathname]);
 
-  // Close mobile sidebar on Escape key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isSidebarOpen) {
@@ -58,13 +71,8 @@ export function AdminLayout() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isSidebarOpen]);
 
-  // Prevent background page scroll while mobile drawer is open
   useEffect(() => {
-    if (isSidebarOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = isSidebarOpen ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
@@ -72,83 +80,143 @@ export function AdminLayout() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate('/admin/login');
+    navigate('/wfx-login');
   };
 
-  return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100">
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-30 border-b border-neutral-800 bg-neutral-900/90 backdrop-blur-md">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          {/* Left: Mobile Hamburger + Brand */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(true)}
-              aria-label="Open admin menu"
-              className="md:hidden p-2 -ml-2 rounded-lg text-neutral-300 hover:text-white hover:bg-neutral-800 transition"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
-
-            <span className="font-bold text-orange-500 tracking-tight text-lg">
+  const renderNavContent = () => (
+    <div className="flex flex-col justify-between h-full">
+      <div className="space-y-6">
+        {/* Brand + User */}
+        <div className="px-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-sm bg-orange-600 inline-block" />
+            <span className="font-bold text-orange-500 tracking-tight text-base">
               Tamdev CMS
             </span>
-
-            {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center gap-5 ml-6 text-sm">
-              {NAV_ITEMS.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    isActive
-                      ? 'text-white font-semibold'
-                      : 'text-neutral-400 hover:text-white transition'
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
           </div>
-
-          {/* Right: Desktop Logout Button */}
-          <div className="hidden md:flex items-center gap-4">
-            <a
-              href="/"
-              target="_blank"
-              className="text-xs text-neutral-400 hover:text-white"
-            >
-              View Live Site ↗
-            </a>
-            <button
-              onClick={handleLogout}
-              className="px-3 py-1.5 text-xs font-medium rounded bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition"
-            >
-              Logout
-            </button>
-          </div>
+          {userEmail && (
+            <div className="mt-3 flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-neutral-800/60 border border-neutral-800">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+              <span title={userEmail} className="text-[11px] font-mono text-neutral-300 truncate">
+                {userEmail}
+              </span>
+            </div>
+          )}
         </div>
+
+        {/* Content Section */}
+        <div className="space-y-1">
+          <p className="px-2.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">
+            Content
+          </p>
+          {CONTENT_NAV.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition ${
+                    isActive
+                      ? 'bg-neutral-800 text-white'
+                      : 'text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-100'
+                  }`
+                }
+              >
+                <Icon size={15} />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </div>
+
+        {/* Sales Channel / Online Site */}
+        <div className="space-y-1">
+          <p className="px-2.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">
+            Online Site
+          </p>
+          {SITE_NAV.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition ${
+                    isActive
+                      ? 'bg-orange-600/15 text-orange-400 border border-orange-500/30'
+                      : 'text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-100'
+                  }`
+                }
+              >
+                <Icon size={15} />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom Actions */}
+      <div className="space-y-1.5 border-t border-neutral-800 pt-4">
+        <a
+          href="/"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-neutral-400 hover:bg-neutral-800/60 hover:text-white transition"
+        >
+          <span>View Live Site</span>
+          <ExternalLink size={13} />
+        </a>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 transition"
+        >
+          <LogOut size={14} />
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col md:flex-row">
+      {/* Desktop Left Sidebar */}
+      <aside className="hidden md:flex md:flex-col w-60 shrink-0 bg-neutral-900 border-r border-neutral-800 p-4 sticky top-0 h-screen">
+        {renderNavContent()}
+      </aside>
+
+      {/* Mobile Top Bar */}
+      <header className="md:hidden sticky top-0 z-30 border-b border-neutral-800 bg-neutral-900/90 backdrop-blur-md px-4 h-14 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open admin menu"
+            className="p-1.5 -ml-1.5 rounded-lg text-neutral-300 hover:text-white hover:bg-neutral-800 transition"
+          >
+            <Menu size={20} />
+          </button>
+          <span className="font-bold text-orange-500 tracking-tight text-base">
+            Tamdev CMS
+          </span>
+        </div>
+        <a
+          href="/"
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs text-neutral-400 hover:text-white flex items-center gap-1"
+        >
+          <span>Live</span>
+          <ExternalLink size={12} />
+        </a>
       </header>
 
-      {/* Animated Mobile Slide-Over Sidebar Drawer */}
+      {/* Mobile Slide-Over Sidebar Drawer */}
       <AnimatePresence>
         {isSidebarOpen && (
           <div className="fixed inset-0 z-50 md:hidden flex">
-            {/* Animated Backdrop */}
             <motion.div
               key="admin-sidebar-backdrop"
               initial={{ opacity: 0 }}
@@ -158,115 +226,33 @@ export function AdminLayout() {
               className="fixed inset-0 bg-black/75 backdrop-blur-sm"
               onClick={() => setIsSidebarOpen(false)}
             />
-
-            {/* Animated Drawer Panel */}
             <motion.aside
               key="admin-sidebar-panel"
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-              className="relative z-10 w-64 max-w-[80vw] h-full bg-neutral-900 border-r border-neutral-800 flex flex-col justify-between p-5 shadow-2xl"
+              className="relative z-10 w-64 max-w-[80vw] h-full bg-neutral-900 border-r border-neutral-800 p-4 shadow-2xl"
             >
-              <div>
-                {/* Drawer Header with Active Session Badge */}
-                <div className="border-b border-neutral-800 pb-4 mb-5">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-orange-500 tracking-tight text-lg">
-                      Tamdev CMS
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsSidebarOpen(false)}
-                      aria-label="Close admin menu"
-                      className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-
-                  {userEmail && (
-                    <div className="mt-2.5 flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-neutral-800/70 border border-neutral-800">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                      <span
-                        title={userEmail}
-                        className="text-xs font-mono text-neutral-300 truncate"
-                      >
-                        {userEmail}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Navigation Links */}
-                <nav className="flex flex-col gap-1.5">
-                  {NAV_ITEMS.map((item) => (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      className={({ isActive }) =>
-                        `px-3 py-2.5 rounded-lg text-sm font-medium transition ${
-                          isActive
-                            ? 'bg-orange-600/15 text-orange-400 border border-orange-500/30'
-                            : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'
-                        }`
-                      }
-                    >
-                      {item.label}
-                    </NavLink>
-                  ))}
-
-                  <div className="my-2 border-t border-neutral-800" />
-
-                  <a
-                    href="/"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-3 py-2.5 rounded-lg text-sm font-medium text-neutral-300 hover:bg-neutral-800 hover:text-white transition flex items-center justify-between"
-                  >
-                    <span>View Live Site</span>
-                    <span>↗</span>
-                  </a>
-                </nav>
-              </div>
-
-              {/* Bottom Logout Action */}
-              <div className="border-t border-neutral-800 pt-4">
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="w-full py-2.5 px-3 rounded-lg text-sm font-semibold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition text-center"
-                >
-                  Logout
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(false)}
+                aria-label="Close admin menu"
+                className="absolute top-3 right-3 p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition"
+              >
+                <X size={18} />
+              </button>
+              {renderNavContent()}
             </motion.aside>
           </div>
         )}
       </AnimatePresence>
 
-      {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-        >
+      {/* Main Content Area */}
+      <main className="flex-1 min-w-0">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
           <Outlet />
-        </motion.div>
+        </div>
       </main>
     </div>
   );

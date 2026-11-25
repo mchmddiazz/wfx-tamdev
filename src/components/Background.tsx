@@ -51,7 +51,16 @@ function getDuration(periodStr: string): string {
   return [yearText, monthText].filter(Boolean).join(" ");
 }
 
-export default function Background() {
+interface BackgroundProps {
+  id?: string;
+  settings?: Record<string, string | boolean>;
+}
+
+export default function Background({ id = 'background', settings }: BackgroundProps) {
+  const heading =
+    typeof settings?.heading === 'string' && settings.heading.trim().length > 0
+      ? settings.heading
+      : 'WORK EXPERIENCE';
   const [experiences, setExperiences] = useState<WorkExperience[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -80,7 +89,7 @@ export default function Background() {
 
   return (
     <section
-      id="background"
+      id={id}
       className="min-h-screen w-full flex flex-col items-start justify-center bg-neutral-200 dark:bg-black transition-colors px-6 sm:px-8 py-12 sm:py-8"
       aria-labelledby="experience-title"
     >
@@ -100,7 +109,7 @@ export default function Background() {
             transition={{ duration: 0.7, ease: 'easeOut' }}
           >
             <h3 className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-6 text-orange-600 dark:text-orange-600 tracking-wide">
-              WORK EXPERIENCE
+              {heading}
             </h3>
             <div className="relative pl-6 sm:pl-8 border-l-2 border-orange-500/30 flex flex-col gap-10">
               {loading ? (

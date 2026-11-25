@@ -47,3 +47,36 @@ export interface WorkExperience {
   created_at?: string;
   updated_at?: string;
 }
+
+export type SectionType =
+  | 'hero'
+  | 'about'
+  | 'background'
+  | 'work'
+  | 'contact'
+  | 'values'
+  | 'custom_cta';
+
+export interface SiteSection {
+  id: string;
+  type: SectionType;
+  nav_label: string;
+  anchor_id: string;
+  show_in_nav: boolean;
+  is_visible: boolean;
+  sort_order: number;
+  draft_settings: Record<string, string | boolean>;
+  published_settings: Record<string, string | boolean>;
+  has_unpublished_changes: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface SiteTheme {
+  id: string;
+  name: string;
+  is_live: boolean;
+  sections: SiteSection[];
+  created_at?: string;
+  updated_at?: string;
+}

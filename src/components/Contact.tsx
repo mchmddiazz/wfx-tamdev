@@ -38,7 +38,7 @@ const FALLBACK_SOCIALS: DisplaySocial[] = [
   },
 ];
 
-export default function Contact() {
+export default function Contact({ id = 'contact' }: { id?: string }) {
   const [title, setTitle] = useState(DEFAULT_TITLE);
   const [subtitle, setSubtitle] = useState(DEFAULT_SUBTITLE);
   const [socialLinks, setSocialLinks] = useState<DisplaySocial[]>(FALLBACK_SOCIALS);
@@ -96,7 +96,7 @@ export default function Contact() {
 
   return (
     <section
-      id="contact"
+      id={id}
       className="min-h-screen w-full flex flex-col items-start justify-center bg-neutral-200 dark:bg-black transition-colors px-6 sm:px-8 py-12 sm:py-8"
       aria-labelledby="contact-title"
     >

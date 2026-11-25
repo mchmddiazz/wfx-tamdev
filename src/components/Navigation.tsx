@@ -7,7 +7,21 @@ import resume from '../assets/resume.pdf';
 import { motion, AnimatePresence } from 'framer-motion';
 
 
-export default function Navigation() {
+export interface NavItem {
+  id: string;
+  label: string;
+}
+
+const DEFAULT_NAV_ITEMS: NavItem[] = [
+  { id: 'intro', label: 'Intro' },
+  { id: 'about', label: 'About' },
+  { id: 'background', label: 'Background' },
+  { id: 'work', label: 'Work' },
+  { id: 'contact', label: 'Contact' },
+];
+
+export default function Navigation({ items }: { items?: NavItem[] }) {
+  const navItems = items && items.length > 0 ? items : DEFAULT_NAV_ITEMS;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('intro');
@@ -92,20 +106,20 @@ export default function Navigation() {
           >
             <motion.div className="h-full flex flex-col justify-start items-start px-8 pb-8 pt-20 space-y-6">
               <div className="space-y-6 w-full">
-                {['intro', 'about', 'background', 'work', 'contact'].map(sec => (
+                {navItems.map(item => (
                   <motion.a
-                    key={sec}
-                    href={`#${sec}`}
+                    key={item.id}
+                    href={`#${item.id}`}
                     variants={linkVariants}
                     className={
-                      `${mobileNavLinkClass(sec)} py-1 pl-2 pr-6 relative transition-all flex items-center justify-between` +
-                      (isActive(sec)
+                      `${mobileNavLinkClass(item.id)} py-1 pl-2 pr-6 relative transition-all flex items-center justify-between` +
+                      (isActive(item.id)
                         ? ' !text-orange-600 dark:!text-orange-600 font-medium'
                         : ' hover:pl-3')
                     }
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <span>{sec.charAt(0).toUpperCase() + sec.slice(1)}</span>
+                    <span>{item.label}</span>
                   </motion.a>
                 ))}
                 {/* Divider above Resume */}
@@ -138,24 +152,24 @@ export default function Navigation() {
             Tamdev.
           </a>
           <div className="flex-1 flex flex-col justify-center space-y-4">
-            {['intro', 'about', 'background', 'work', 'contact'].map((sec, idx) => (
+            {navItems.map((item, idx) => (
               <motion.a
-                key={sec}
+                key={item.id}
                 initial={{ x: -10, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.08 * idx }}
                 whileHover={{ x: 4 }}
-                href={`#${sec}`}
-                className={`${navLinkClass(sec)} flex items-center gap-2`}
+                href={`#${item.id}`}
+                className={`${navLinkClass(item.id)} flex items-center gap-2`}
               >
-                {isActive(sec) && (
+                {isActive(item.id) && (
                   <motion.span
                     layoutId="activeNavIndicator"
                     className="w-1.5 h-1.5 rounded-full bg-orange-600 inline-block"
                     transition={{ type: 'spring', stiffness: 380, damping: 28 }}
                   />
                 )}
-                <span>{sec.charAt(0).toUpperCase() + sec.slice(1)}</span>
+                <span>{item.label}</span>
               </motion.a>
             ))}
             <motion.a
