@@ -41,7 +41,7 @@ values
     'Sep 2026 - Present',
     'Bandung, Indonesia',
     'Installed, replaced, and configured SD-WAN hardware for Digiserve enterprise clients at PT Indomarco Prismatama retail sites, managing network deployment projects across Greater Bandung, Priangan Timur, Sumedang, and Sukabumi. Responsible for cable routing, labeling, server rack setup, and testing network connectivity and failover performance while collaborating with the central NOC team for remote device provisioning and creating accurate work completion reports.',
-    1,
+    0,
     true
   ),
   (
@@ -50,6 +50,6 @@ values
     'Sep 2019 - Feb 2025',
     'Bandung, Indonesia',
     'Designing and customizing client e-commerce websites using Shopify and Liquid templates from brief to deployment, consistently optimizing page load performance to meet platform standards while redesigning interfaces based on Figma mockups, collaborating with design teams, resolving technical issues, and documenting troubleshooting procedures.',
-    2,
+    1,
     true
   );

@@ -19,7 +19,7 @@ export default function ManageWorkExperience() {
   const [period, setPeriod] = useState('');
   const [city, setCity] = useState('');
   const [description, setDescription] = useState('');
-  const [sortOrder, setSortOrder] = useState(1);
+  const [sortOrder, setSortOrder] = useState(0);
   const [isActive, setIsActive] = useState(true);
 
   // Delete confirmation
@@ -65,7 +65,7 @@ export default function ManageWorkExperience() {
     setPeriod('');
     setCity('');
     setDescription('');
-    setSortOrder(experiences.length + 1);
+    setSortOrder(experiences.length);
     setIsActive(true);
     setEditingId(null);
   };
