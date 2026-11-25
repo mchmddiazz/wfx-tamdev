@@ -1,5 +1,6 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, Paintbrush, Plus, Trash2, CheckCircle2, CodeXml, Pencil, Check, X, MoreHorizontal, Eye, Copy, Download, Info, Upload } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { SiteTheme } from '../../types/cms';
@@ -39,11 +40,18 @@ export default function ThemesDashboard() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{
+    type: 'delete' | 'publish';
+    theme: SiteTheme;
+  } | null>(null);
 
   useEffect(() => {
     const handleClose = () => setOpenMenuId(null);
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpenMenuId(null);
+      if (e.key === 'Escape') {
+        setOpenMenuId(null);
+        setConfirmAction((prev) => (prev && !busyId ? null : prev));
+      }
     };
     window.addEventListener('click', handleClose);
     window.addEventListener('keydown', handleKey);
@@ -118,30 +126,39 @@ export default function ThemesDashboard() {
     }
   };
 
-  const handlePublishDraft = async (theme: SiteTheme) => {
-    if (!confirm(`Publish "${theme.name}" as your live site theme?`)) return;
-    setBusyId(theme.id);
-
-    // Unset current live theme(s), then set this theme live
-    await supabase.from('site_themes').update({ is_live: false }).neq('id', theme.id);
-    const { error } = await supabase
-      .from('site_themes')
-      .update({ is_live: true, updated_at: new Date().toISOString() })
-      .eq('id', theme.id);
-
-    setBusyId(null);
-    if (error) {
-      alert('Failed to publish theme: ' + error.message);
-      return;
-    }
-    await fetchThemes();
+  const handlePublishDraft = (theme: SiteTheme) => {
+    setConfirmAction({ type: 'publish', theme });
   };
 
-  const handleDeleteDraft = async (theme: SiteTheme) => {
-    if (!confirm(`Delete draft "${theme.name}" permanently?`)) return;
+  const handleDeleteDraft = (theme: SiteTheme) => {
+    setConfirmAction({ type: 'delete', theme });
+  };
+
+  const executeConfirmAction = async () => {
+    if (!confirmAction) return;
+    const { type, theme } = confirmAction;
     setBusyId(theme.id);
+
+    if (type === 'publish') {
+      await supabase.from('site_themes').update({ is_live: false }).neq('id', theme.id);
+      const { error } = await supabase
+        .from('site_themes')
+        .update({ is_live: true, updated_at: new Date().toISOString() })
+        .eq('id', theme.id);
+
+      setBusyId(null);
+      setConfirmAction(null);
+      if (error) {
+        alert('Failed to publish theme: ' + error.message);
+        return;
+      }
+      await fetchThemes();
+      return;
+    }
+
     const { error } = await supabase.from('site_themes').delete().eq('id', theme.id);
     setBusyId(null);
+    setConfirmAction(null);
     if (!error) fetchThemes();
   };
 
@@ -655,6 +672,103 @@ export default function ThemesDashboard() {
           </div>
         )}
       </div>
+
+      {/* Custom Confirmation Modal */}
+      <AnimatePresence>
+        {confirmAction && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            onClick={() => {
+              if (!busyId) setConfirmAction(null);
+            }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm px-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ duration: 0.18, ease: [0.25, 0.8, 0.25, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="theme-confirm-title"
+              className="w-full max-w-sm rounded-2xl bg-neutral-900 border border-neutral-800 shadow-2xl p-6 space-y-5"
+            >
+              <div className="flex items-start gap-3.5">
+                <div
+                  className={`p-2.5 rounded-xl border shrink-0 ${
+                    confirmAction.type === 'delete'
+                      ? 'bg-red-500/15 border-red-500/30 text-red-400'
+                      : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                  }`}
+                >
+                  {confirmAction.type === 'delete' ? (
+                    <Trash2 size={18} />
+                  ) : (
+                    <CheckCircle2 size={18} />
+                  )}
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <h3 id="theme-confirm-title" className="text-sm font-semibold text-white">
+                    {confirmAction.type === 'delete'
+                      ? 'Delete draft theme?'
+                      : 'Publish draft theme?'}
+                  </h3>
+                  <p className="text-xs text-neutral-400 leading-relaxed">
+                    {confirmAction.type === 'delete' ? (
+                      <>
+                        <span className="text-neutral-200 font-medium">
+                          "{confirmAction.theme.name}"
+                        </span>{' '}
+                        will be permanently deleted. This action cannot be undone.
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-neutral-200 font-medium">
+                          "{confirmAction.theme.name}"
+                        </span>{' '}
+                        will replace your current live portfolio theme.
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setConfirmAction(null)}
+                  disabled={Boolean(busyId)}
+                  className="px-4 py-2 text-xs font-medium rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 transition disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={executeConfirmAction}
+                  disabled={Boolean(busyId)}
+                  className={`px-4 py-2 text-xs font-semibold rounded-lg text-white transition disabled:opacity-50 ${
+                    confirmAction.type === 'delete'
+                      ? 'bg-red-600 hover:bg-red-500'
+                      : 'bg-emerald-600 hover:bg-emerald-500'
+                  }`}
+                >
+                  {busyId
+                    ? confirmAction.type === 'delete'
+                      ? 'Deleting...'
+                      : 'Publishing...'
+                    : confirmAction.type === 'delete'
+                      ? 'Delete permanently'
+                      : 'Publish theme'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
