@@ -2,10 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FolderKanban,
-  UserCircle,
   Share2,
-  Briefcase,
   Paintbrush,
   ExternalLink,
   LogOut,
@@ -15,10 +12,7 @@ import {
 import { supabase } from '../lib/supabase';
 
 const CONTENT_NAV = [
-  { to: '/admin/projects', label: 'Projects', icon: FolderKanban },
-  { to: '/admin/profile', label: 'Profile & Resume', icon: UserCircle },
   { to: '/admin/socials', label: 'Social Links', icon: Share2 },
-  { to: '/admin/experience', label: 'Work Experience', icon: Briefcase },
 ];
 
 const SITE_NAV = [
@@ -26,10 +20,7 @@ const SITE_NAV = [
 ];
 
 const PAGE_TITLES: Record<string, string> = {
-  '/admin/projects': 'Projects | Tamdev CMS',
-  '/admin/profile': 'Profile & Resume | Tamdev CMS',
   '/admin/socials': 'Social Links | Tamdev CMS',
-  '/admin/experience': 'Work Experience | Tamdev CMS',
   '/admin/customize': 'Online Site & Themes | Tamdev CMS',
 };
 

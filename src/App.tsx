@@ -17,10 +17,7 @@ const Navigation = lazy(() => import('./components/Navigation'));
 import Login from './pages/admin/Login';
 import { ProtectedRoute } from './components/admin/ProtectedRoute';
 import { AdminLayout } from './layouts/AdminLayout';
-import ManageProjects from './pages/admin/ManageProjects';
-import ManageProfile from './pages/admin/ManageProfile';
 import ManageSocials from './pages/admin/ManageSocials';
-import ManageWorkExperience from './pages/admin/ManageWorkExperience';
 import ThemesDashboard from './pages/admin/ThemesDashboard';
 import CustomizeSite from './pages/admin/CustomizeSite';
 import CustomizePreview from './pages/admin/CustomizePreview';
@@ -132,10 +129,10 @@ function AnimatedAppRoutes() {
             <Route path="/admin/customize/editor" element={<CustomizeSite />} />
             <Route path="/admin/preview" element={<CustomizePreview />} />
             <Route element={<AdminLayout />}>
-              <Route path="/admin/projects" element={<ManageProjects />} />
-              <Route path="/admin/profile" element={<ManageProfile />} />
+              <Route path="/admin/projects" element={<Navigate to="/admin/customize" replace />} />
+              <Route path="/admin/profile" element={<Navigate to="/admin/customize" replace />} />
               <Route path="/admin/socials" element={<ManageSocials />} />
-              <Route path="/admin/experience" element={<ManageWorkExperience />} />
+              <Route path="/admin/experience" element={<Navigate to="/admin/customize" replace />} />
               <Route path="/admin/customize" element={<ThemesDashboard />} />
             </Route>
           </Route>
