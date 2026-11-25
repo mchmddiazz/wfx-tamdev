@@ -360,7 +360,7 @@ export default function ThemesDashboard() {
             <Paintbrush size={18} />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white">Online Site</h1>
+            <h1 className="text-xl font-bold text-white">Themes</h1>
             <p className="text-xs text-neutral-400">
               Manage your live portfolio theme and work on draft layouts.
             </p>
@@ -402,17 +402,17 @@ export default function ThemesDashboard() {
       {/* Current Live Theme Card */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl relative">
         {/* Scaled Live Preview Banner */}
-        <div className="relative h-64 sm:h-80 bg-black overflow-hidden rounded-t-2xl border-b border-neutral-800">
+        <div className="relative h-[400px] sm:h-80 bg-black overflow-hidden rounded-2xl sm:rounded-b-none sm:rounded-t-2xl sm:border-b sm:border-neutral-800">
           <iframe
             src="/"
             title="Current Live Theme Preview"
-            className="w-[200%] h-[200%] origin-top-left scale-50 border-0 pointer-events-none"
+            className="w-[125%] h-[125%] scale-[0.8] sm:w-[200%] sm:h-[200%] sm:scale-50 origin-top-left border-0 pointer-events-none"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/90 via-neutral-950/20 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/70 sm:from-neutral-950/90 sm:via-neutral-950/20 to-transparent pointer-events-none" />
         </div>
 
-        {/* Bottom Info & Actions Bar (outside overflow-hidden so dropdown is never clipped) */}
-        <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Bottom Info & Actions Bar (overlaid on mobile like Shopify card, static bar on desktop; outside overflow-hidden so dropdown is never clipped) */}
+        <div className="absolute inset-x-0 bottom-0 z-10 p-5 sm:static sm:px-5 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-lg font-bold text-white">{currentHost}</span>
@@ -452,10 +452,9 @@ export default function ThemesDashboard() {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-xs text-neutral-400">
+              <div className="flex items-center gap-2 text-xs text-neutral-300 sm:text-neutral-400">
                 <span>
-                  {liveTheme.name} · Last saved: {formatDate(liveTheme.updated_at)} ·{' '}
-                  {liveTheme.sections?.length ?? 5} sections
+                  {liveTheme.name} · Last saved: {formatDate(liveTheme.updated_at)}
                 </span>
               </div>
             )}
@@ -468,7 +467,7 @@ export default function ThemesDashboard() {
                   ? '/admin/customize/editor'
                   : `/admin/customize/editor?themeId=${liveTheme.id}`
               }
-              className="px-4 py-2 text-xs font-semibold rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition"
+              className="px-4 py-2 text-xs font-semibold rounded-full sm:rounded-lg bg-white text-neutral-950 hover:bg-neutral-200 sm:bg-orange-600 sm:hover:bg-orange-700 sm:text-white transition"
             >
               Edit theme
             </Link>
