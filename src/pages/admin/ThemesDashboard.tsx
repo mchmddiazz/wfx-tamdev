@@ -262,10 +262,11 @@ export default function ThemesDashboard() {
     }
   };
 
-  const renderThemeMenu = (theme: SiteTheme) => {
+  const renderThemeMenu = (theme: SiteTheme, align: 'left' | 'right' = 'right') => {
     const isOpen = openMenuId === theme.id;
     const previewHref =
       theme.is_live || theme.id === 'default-live' ? '/' : `/?previewThemeId=${theme.id}`;
+    const alignClass = align === 'left' ? 'left-0 sm:left-auto sm:right-0' : 'right-0';
 
     return (
       <div className="relative" onClick={(e) => e.stopPropagation()}>
@@ -279,7 +280,7 @@ export default function ThemesDashboard() {
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-56 rounded-xl bg-neutral-900 border border-neutral-800 shadow-2xl py-1.5 z-40 text-xs">
+          <div className={`absolute ${alignClass} mt-2 w-56 rounded-xl bg-neutral-900 border border-neutral-800 shadow-2xl py-1.5 z-40 text-xs`}>
             <a
               href={previewHref}
               target="_blank"
@@ -471,7 +472,7 @@ export default function ThemesDashboard() {
             >
               Edit theme
             </Link>
-            {renderThemeMenu(liveTheme)}
+            {renderThemeMenu(liveTheme, 'left')}
           </div>
         </div>
       </div>
