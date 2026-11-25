@@ -4,6 +4,7 @@ prompt.md
 .env*
 dist
 .DS_Store
+supabase
 
 # AI & planning artifacts
 .superpowers/
