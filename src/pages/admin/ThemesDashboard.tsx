@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ExternalLink, Paintbrush, Plus, Trash2, CheckCircle2, CodeXml, Pencil, Check, X, MoreHorizontal, Eye, Copy, Download, Info } from 'lucide-react';
+import { ExternalLink, Paintbrush, Plus, Trash2, CheckCircle2, CodeXml, Pencil, Check, X, MoreHorizontal, Eye, Copy, Download, Info, Upload } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { SiteTheme } from '../../types/cms';
 import { DEFAULT_SECTIONS } from '../../lib/sectionRegistry';
+import { parseAndValidateThemeJson } from '../../lib/themeUtils';
 
 const FALLBACK_LIVE_THEME: SiteTheme = {
   id: 'default-live',
@@ -35,6 +36,9 @@ export default function ThemesDashboard() {
   const [editingThemeId, setEditingThemeId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleClose = () => setOpenMenuId(null);
@@ -214,6 +218,50 @@ export default function ThemesDashboard() {
     URL.revokeObjectURL(url);
   };
 
+  const handleImportThemeFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (tableMissing) {
+      setImportError('Please run supabase/migrations/20261125_create_site_themes.sql in Supabase first.');
+      e.target.value = '';
+      return;
+    }
+
+    setImporting(true);
+    setImportError(null);
+
+    try {
+      const rawText = await file.text();
+      const fallbackName = file.name.replace(/\.json$/i, '') || 'Imported Theme';
+      const parsed = parseAndValidateThemeJson(rawText, fallbackName);
+
+      const hasDuplicateName = themes.some(
+        (t) => t.name.toLowerCase() === parsed.name.toLowerCase()
+      );
+      const uniqueName = hasDuplicateName ? `${parsed.name} (Imported)` : parsed.name;
+
+      const { error } = await supabase.from('site_themes').insert([
+        {
+          name: uniqueName,
+          is_live: false,
+          sections: parsed.sections,
+        },
+      ]);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      await fetchThemes();
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Failed to import theme JSON.');
+    } finally {
+      setImporting(false);
+      e.target.value = '';
+    }
+  };
+
   const renderThemeMenu = (theme: SiteTheme) => {
     const isOpen = openMenuId === theme.id;
     const previewHref =
@@ -337,6 +385,20 @@ export default function ThemesDashboard() {
         </div>
       )}
 
+      {importError && (
+        <div className="flex items-center justify-between gap-3 bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-xl text-xs text-red-300">
+          <span>{importError}</span>
+          <button
+            type="button"
+            onClick={() => setImportError(null)}
+            aria-label="Dismiss import error"
+            className="text-red-300 hover:text-white transition"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Current Live Theme Card */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl relative">
         {/* Scaled Live Preview Banner */}
@@ -427,14 +489,32 @@ export default function ThemesDashboard() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setShowNewDraftInput((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 transition self-start sm:self-auto"
-          >
-            <Plus size={14} />
-            <span>New draft</span>
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json"
+              onChange={handleImportThemeFile}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-700 transition disabled:opacity-50"
+            >
+              <Upload size={14} />
+              <span>{importing ? 'Importing...' : 'Import JSON'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowNewDraftInput((v) => !v)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 transition"
+            >
+              <Plus size={14} />
+              <span>New draft</span>
+            </button>
+          </div>
         </div>
 
         {/* Inline New Draft Form */}
