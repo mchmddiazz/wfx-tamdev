@@ -235,10 +235,7 @@ export default function Work() {
           PAST PROJECTS
         </h2>
         <p className="mt-4 font-mono text-neutral-600 dark:text-neutral-400 text-sm sm:text-md mb-6 md:mt-auto">
-          See some of the projects I've worked on, showcasing my skills in web
-          development, design, and problem-solving. Each project reflects my
-          commitment to creating functional and visually appealing digital
-          experiences.
+          A selection of client e-commerce platforms, custom Shopify builds, and automation tools I've built and maintained over the years. Each project showcases my expertise in web development, problem-solving, and delivering high-quality solutions that meet client needs.
         </p>
 
         {/* Swiper Carousel */}
