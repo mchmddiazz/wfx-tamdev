@@ -38,9 +38,15 @@ const FALLBACK_SOCIALS: DisplaySocial[] = [
   },
 ];
 
-export default function Contact({ id = 'contact' }: { id?: string }) {
-  const [title, setTitle] = useState(DEFAULT_TITLE);
-  const [subtitle, setSubtitle] = useState(DEFAULT_SUBTITLE);
+export default function Contact({
+  id = 'contact',
+  settings,
+}: {
+  id?: string;
+  settings?: Record<string, any>;
+}) {
+  const [profileTitle, setProfileTitle] = useState<string | null>(null);
+  const [profileSubtitle, setProfileSubtitle] = useState<string | null>(null);
   const [socialLinks, setSocialLinks] = useState<DisplaySocial[]>(FALLBACK_SOCIALS);
   const [copied, setCopied] = useState(false);
 
@@ -51,23 +57,16 @@ export default function Contact({ id = 'contact' }: { id?: string }) {
   };
 
   useEffect(() => {
-    async function loadContactSection() {
-      const [socialsRes, profileRes] = await Promise.all([
-        supabase
-          .from('social_links')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true })
-          .order('created_at', { ascending: true }),
-        supabase
-          .from('site_profile')
-          .select('contact_title, contact_subtitle')
-          .eq('id', 1)
-          .single(),
-      ]);
+    async function loadSocials() {
+      const { data, error } = await supabase
+        .from('social_links')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true });
 
-      if (!socialsRes.error && socialsRes.data && socialsRes.data.length > 0) {
-        const mapped: DisplaySocial[] = (socialsRes.data as SocialLink[]).map((item) => ({
+      if (!error && data && data.length > 0) {
+        const mapped: DisplaySocial[] = (data as SocialLink[]).map((item) => ({
           id: item.id,
           name: item.platform,
           href: item.url,
@@ -75,16 +74,35 @@ export default function Contact({ id = 'contact' }: { id?: string }) {
         }));
         setSocialLinks(mapped);
       }
+    }
 
-      if (!profileRes.error && profileRes.data) {
-        if (profileRes.data.contact_title) setTitle(profileRes.data.contact_title);
-        if (profileRes.data.contact_subtitle)
-          setSubtitle(profileRes.data.contact_subtitle);
+    loadSocials();
+  }, []);
+
+  useEffect(() => {
+    if (settings?.title !== undefined || settings?.subtitle !== undefined) return;
+    let active = true;
+    async function loadProfileFallback() {
+      const { data, error } = await supabase
+        .from('site_profile')
+        .select('contact_title, contact_subtitle')
+        .eq('id', 1)
+        .single();
+
+      if (active && !error && data) {
+        if (data.contact_title) setProfileTitle(data.contact_title);
+        if (data.contact_subtitle) setProfileSubtitle(data.contact_subtitle);
       }
     }
 
-    loadContactSection();
-  }, []);
+    loadProfileFallback();
+    return () => {
+      active = false;
+    };
+  }, [settings?.title, settings?.subtitle]);
+
+  const title = (settings?.title as string) || profileTitle || DEFAULT_TITLE;
+  const subtitle = (settings?.subtitle as string) || profileSubtitle || DEFAULT_SUBTITLE;
 
   const renderFormattedTitle = (text: string) =>
     text.split('\n').map((line, index, arr) => (
@@ -195,10 +213,6 @@ export default function Contact({ id = 'contact' }: { id?: string }) {
               </motion.div>
             );
           })}
-        </div>
-
-        <div className="w-full mt-24 font-mono text-center px-4 text-xs sm:text-base text-neutral-500 dark:text-neutral-400 font-medium tracking-tight">
-          &nbsp;Build with Passion, Tamdev © 2026
         </div>
       </motion.div>
     </section>

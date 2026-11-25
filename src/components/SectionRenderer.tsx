@@ -28,7 +28,7 @@ export function SectionRenderer({ section, mode = 'published' }: SectionRenderer
     case 'work':
       return <Work id={section.anchor_id} />;
     case 'contact':
-      return <Contact id={section.anchor_id} />;
+      return <Contact id={section.anchor_id} settings={settings} />;
     case 'values':
       return <Value id={section.anchor_id} />;
     case 'custom_cta':

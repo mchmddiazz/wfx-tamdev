@@ -12,6 +12,7 @@ import { SiteSection } from './types/cms';
 
 // Lazy-loaded Public Portfolio Navigation
 const Navigation = lazy(() => import('./components/Navigation'));
+import Copyright from './components/Copyright';
 
 // CMS Imports
 import Login from './pages/admin/Login';
@@ -46,14 +47,12 @@ function PortfolioPage() {
 
       const { data: themeData, error: themeErr } = await themeQuery;
 
-      if (!themeErr && themeData?.sections && Array.isArray(themeData.sections)) {
-        const visible = (themeData.sections as SiteSection[])
-          .filter((s) => s.is_visible)
-          .sort((a, b) => a.sort_order - b.sort_order);
-        if (visible.length > 0) {
-          setSections(visible);
-          return;
-        }
+      if (!themeErr && themeData?.sections && Array.isArray(themeData.sections) && themeData.sections.length > 0) {
+        const sorted = [...(themeData.sections as SiteSection[])].sort(
+          (a, b) => a.sort_order - b.sort_order
+        );
+        setSections(sorted);
+        return;
       }
 
       // 2. Fallback to site_sections
@@ -70,7 +69,12 @@ function PortfolioPage() {
     loadSections();
   }, [previewThemeId]);
 
-  const navItems = sections
+  const headerSection = sections.find((s) => s.type === 'header');
+  const copyrightSection = sections.find((s) => s.type === 'copyright');
+  const visibleSections = sections.filter(
+    (s) => s.is_visible && s.type !== 'header' && s.type !== 'copyright'
+  );
+  const navItems = visibleSections
     .filter((s) => s.show_in_nav)
     .map((s) => ({ id: s.anchor_id, label: s.nav_label }));
 
@@ -92,12 +96,19 @@ function PortfolioPage() {
             className="pb-safe-bottom"
           >
             <ScrollProgress />
-            <Navigation items={navItems} />
+            {headerSection?.is_visible !== false && (
+              <Navigation items={navItems} settings={headerSection?.published_settings} />
+            )}
             <main>
-              {sections.map((section) => (
+              {visibleSections.map((section) => (
                 <SectionRenderer key={section.id} section={section} mode="published" />
               ))}
             </main>
+            {copyrightSection
+              ? copyrightSection.is_visible && (
+                  <Copyright settings={copyrightSection.published_settings} />
+                )
+              : <Copyright />}
           </motion.div>
         </Suspense>
       )}

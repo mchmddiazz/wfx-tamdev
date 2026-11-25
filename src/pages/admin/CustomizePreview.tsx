@@ -3,6 +3,7 @@ import { SiteSection } from '../../types/cms';
 import { DEFAULT_SECTIONS } from '../../lib/sectionRegistry';
 import { SectionRenderer } from '../../components/SectionRenderer';
 import { ScrollProgress } from '../../components/ScrollProgress';
+import Copyright from '../../components/Copyright';
 
 const Navigation = lazy(() => import('../../components/Navigation'));
 
@@ -30,7 +31,11 @@ export default function CustomizePreview() {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  const visibleSections = sections.filter((s) => s.is_visible);
+  const headerSection = sections.find((s) => s.type === 'header');
+  const copyrightSection = sections.find((s) => s.type === 'copyright');
+  const visibleSections = sections.filter(
+    (s) => s.is_visible && s.type !== 'header' && s.type !== 'copyright'
+  );
   const navItems = visibleSections
     .filter((s) => s.show_in_nav)
     .map((s) => ({ id: s.anchor_id, label: s.nav_label }));
@@ -39,7 +44,9 @@ export default function CustomizePreview() {
     <div className="min-h-screen bg-neutral-200 dark:bg-black transition-colors relative z-0">
       <Suspense fallback={null}>
         <ScrollProgress />
-        <Navigation items={navItems} />
+        {headerSection?.is_visible !== false && (
+          <Navigation items={navItems} settings={headerSection?.draft_settings} />
+        )}
         <main>
           {visibleSections.length === 0 ? (
             <div className="min-h-screen flex items-center justify-center text-neutral-500 text-sm px-6 text-center">
@@ -66,6 +73,26 @@ export default function CustomizePreview() {
             ))
           )}
         </main>
+        {copyrightSection?.is_visible !== false &&
+          (copyrightSection ? (
+            <div
+              onClick={() =>
+                window.parent.postMessage(
+                  { type: 'TAMDEV_PREVIEW_SELECT', id: copyrightSection.id },
+                  window.location.origin
+                )
+              }
+              className={`relative cursor-pointer transition ${
+                selectedId === copyrightSection.id
+                  ? 'ring-2 ring-orange-500 ring-inset'
+                  : 'hover:ring-1 hover:ring-orange-500/40 ring-inset'
+              }`}
+            >
+              <Copyright settings={copyrightSection.draft_settings} />
+            </div>
+          ) : (
+            <Copyright />
+          ))}
       </Suspense>
     </div>
   );
