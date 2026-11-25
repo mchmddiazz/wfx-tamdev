@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
-import { WorkExperience } from "../types/cms";
+import { WorkExperience, WorkExperienceBlockItem } from "../types/cms";
 import { LEGACY_WORK_EXPERIENCES } from "../data/LegacyWorkExperiences";
 
 // Helper function to calculate duration from a period string (e.g. "Sep 2019 - Feb 2025" -> "5 yrs 6 mos")
@@ -53,7 +53,8 @@ function getDuration(periodStr: string): string {
 
 interface BackgroundProps {
   id?: string;
-  settings?: Record<string, string | boolean>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  settings?: Record<string, any>;
 }
 
 export default function Background({ id = 'background', settings }: BackgroundProps) {
@@ -61,10 +62,19 @@ export default function Background({ id = 'background', settings }: BackgroundPr
     typeof settings?.heading === 'string' && settings.heading.trim().length > 0
       ? settings.heading
       : 'WORK EXPERIENCE';
-  const [experiences, setExperiences] = useState<WorkExperience[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [legacyExperiences, setLegacyExperiences] = useState<WorkExperience[]>([]);
+  const [loading, setLoading] = useState(settings?.items === undefined);
+
+  const hasSeededItems = Array.isArray(settings?.items);
 
   useEffect(() => {
+    if (hasSeededItems) {
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
     supabase
       .from("work_experiences")
       .select("*")
@@ -72,11 +82,12 @@ export default function Background({ id = 'background', settings }: BackgroundPr
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true })
       .then(({ data, error }) => {
+        if (cancelled) return;
         if (!error && data && data.length > 0) {
-          setExperiences(data);
+          setLegacyExperiences(data);
         } else {
           // Fallback to legacy static data if Supabase is empty or unreachable
-          setExperiences(
+          setLegacyExperiences(
             LEGACY_WORK_EXPERIENCES.map((e, i) => ({
               ...e,
               id: String(i),
@@ -85,7 +96,17 @@ export default function Background({ id = 'background', settings }: BackgroundPr
         }
         setLoading(false);
       });
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hasSeededItems]);
+
+  const experiences: Array<WorkExperience | WorkExperienceBlockItem> = hasSeededItems
+    ? (settings!.items as WorkExperienceBlockItem[]).filter((item) => item.is_active !== false)
+    : legacyExperiences;
+
+  const isLoading = hasSeededItems ? false : loading;
 
   return (
     <section
@@ -112,7 +133,7 @@ export default function Background({ id = 'background', settings }: BackgroundPr
               {heading}
             </h3>
             <div className="relative pl-6 sm:pl-8 border-l-2 border-orange-500/30 flex flex-col gap-10">
-              {loading ? (
+              {isLoading ? (
                 <div className="text-neutral-500 text-sm font-mono animate-pulse">Loading...</div>
               ) : (
                 experiences.map((exp, index) => {

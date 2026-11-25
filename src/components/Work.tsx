@@ -1,7 +1,7 @@
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { Project } from "../types/cms";
+import { Project, ProjectBlockItem } from "../types/cms";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 
@@ -180,14 +180,19 @@ function ProjectCard({ project, isMobile }: { project: DisplayProject; isMobile:
   );
 }
 
-export default function Work({ id = "work" }: { id?: string }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function Work({ id = "work", settings }: { id?: string; settings?: Record<string, any> }) {
   const [isMobile, setIsMobile] = useState(false);
-  const [projects, setProjects] = useState<DisplayProject[]>(FALLBACK_PROJECTS);
+  const [legacyProjects, setLegacyProjects] = useState<DisplayProject[]>(FALLBACK_PROJECTS);
+
+  const hasSeededItems = Array.isArray(settings?.items);
 
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
+
+    let cancelled = false;
 
     async function loadProjects() {
       const { data, error } = await supabase
@@ -196,7 +201,7 @@ export default function Work({ id = "work" }: { id?: string }) {
         .eq("is_published", true)
         .order("sort_order", { ascending: true });
 
-      if (!error && data && data.length > 0) {
+      if (!cancelled && !error && data && data.length > 0) {
         const mapped: DisplayProject[] = (data as Project[]).map((item) => ({
           id: item.id,
           title: item.title,
@@ -206,16 +211,41 @@ export default function Work({ id = "work" }: { id?: string }) {
           url: item.live_url || item.repo_url || "#",
           isRepo: !item.live_url && Boolean(item.repo_url),
         }));
-        setProjects(mapped);
+        setLegacyProjects(mapped);
       }
     }
 
-    loadProjects();
+    if (!hasSeededItems) {
+      loadProjects();
+    }
+
     checkMobile();
     window.addEventListener("resize", checkMobile);
 
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("resize", checkMobile);
+    };
+  }, [hasSeededItems]);
+
+  const projects: DisplayProject[] = hasSeededItems
+    ? (settings!.items as ProjectBlockItem[])
+        .filter((item) => item.is_published !== false)
+        .map((item) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          image: item.thumbnail_url,
+          technologies: item.tech_stack || [],
+          url: item.live_url || item.repo_url || "#",
+          isRepo: !item.live_url && Boolean(item.repo_url),
+        }))
+    : legacyProjects;
+
+  const heading =
+    typeof settings?.heading === "string" && settings.heading.trim().length > 0
+      ? settings.heading
+      : "PAST PROJECTS";
 
   return (
     <motion.section
@@ -232,7 +262,7 @@ export default function Work({ id = "work" }: { id?: string }) {
           id="portfolio-title"
           className="font-gambarino text-lg sm:text-xl md:text-2xl font-semibold mb-4 mt-8 md:mt-auto text-orange-600 dark:text-orange-600"
         >
-          PAST PROJECTS
+          {heading}
         </h2>
         <p className="mt-4 font-mono text-neutral-600 dark:text-neutral-400 text-sm sm:text-md mb-6 md:mt-auto">
           A selection of client e-commerce platforms, custom Shopify builds, and automation tools I've built and maintained over the years. Each project showcases my expertise in web development, problem-solving, and delivering high-quality solutions that meet client needs.

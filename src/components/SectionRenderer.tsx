@@ -5,6 +5,7 @@ const Hero = lazy(() => import('./Hero'));
 const About = lazy(() => import('./About'));
 const Background = lazy(() => import('./Background'));
 const Work = lazy(() => import('./Work'));
+const Certificates = lazy(() => import('./Certificates'));
 const Contact = lazy(() => import('./Contact'));
 const Value = lazy(() => import('./Value'));
 const CustomSection = lazy(() => import('./CustomSection'));
@@ -22,11 +23,13 @@ export function SectionRenderer({ section, mode = 'published' }: SectionRenderer
     case 'hero':
       return <Hero id={section.anchor_id} settings={settings} />;
     case 'about':
-      return <About id={section.anchor_id} />;
+      return <About id={section.anchor_id} settings={settings} />;
     case 'background':
       return <Background id={section.anchor_id} settings={settings} />;
     case 'work':
-      return <Work id={section.anchor_id} />;
+      return <Work id={section.anchor_id} settings={settings} />;
+    case 'certificates':
+      return <Certificates id={section.anchor_id} settings={settings} />;
     case 'contact':
       return <Contact id={section.anchor_id} settings={settings} />;
     case 'values':
