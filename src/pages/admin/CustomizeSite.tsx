@@ -374,7 +374,7 @@ export default function CustomizeSite() {
         ...s,
         sort_order: i,
         published_settings: publish ? s.draft_settings : s.published_settings,
-        has_unpublished_changes: publish ? false : true,
+        has_unpublished_changes: publish ? false : s.has_unpublished_changes,
       }));
 
       // Save to site_themes if themeId is present (or live theme exists)
@@ -814,7 +814,7 @@ export default function CustomizeSite() {
                 )}
 
                 {/* Menu & Visibility */}
-                {(!isStatic || selectedSection.type === 'copyright') && (
+                {(!isStatic || selectedSection.type === 'copyright' || selectedSection.type === 'header') && (
                   <div className="space-y-3">
                     <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
                       {isStatic ? 'Visibility' : 'Menu & Visibility'}

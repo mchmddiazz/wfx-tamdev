@@ -10,9 +10,10 @@ import { supabase } from './lib/supabase';
 import { DEFAULT_SECTIONS } from './lib/sectionRegistry';
 import { SiteSection } from './types/cms';
 
+import Copyright from './components/Copyright';
+
 // Lazy-loaded Public Portfolio Navigation
 const Navigation = lazy(() => import('./components/Navigation'));
-import Copyright from './components/Copyright';
 
 // CMS Imports
 import Login from './pages/admin/Login';

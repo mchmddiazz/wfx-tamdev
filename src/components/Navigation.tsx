@@ -33,7 +33,11 @@ export default function Navigation({
   const logoUrl = (settings?.logoUrl as string) || '';
   const showResumeLink = settings?.showResumeLink !== false;
   const resumeLabel = (settings?.resumeLabel as string) || 'Resume*';
-  const resumePdfUrl = settings?.resumePdfUrl as string | undefined;
+  const rawResumePdfUrl = settings?.resumePdfUrl as string | undefined;
+  const resumePdfUrl =
+    typeof rawResumePdfUrl === 'string' && rawResumePdfUrl.trim().length > 0
+      ? rawResumePdfUrl
+      : undefined;
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [, setIsScrolled] = useState(false);
