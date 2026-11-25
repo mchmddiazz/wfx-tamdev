@@ -201,7 +201,7 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="pt-2 border-t border-neutral-800/80">
+          {/* <div className="pt-2 border-t border-neutral-800/80">
             <Link
               to="/"
               className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-400 hover:text-orange-500 transition-colors"
@@ -209,7 +209,7 @@ export default function Login() {
               <ArrowLeft size={13} />
               <span>Back to portfolio</span>
             </Link>
-          </div>
+          </div> */}
         </motion.div>
       </div>
     </div>

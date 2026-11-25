@@ -21,7 +21,7 @@ const SITE_NAV = [
 
 const PAGE_TITLES: Record<string, string> = {
   '/admin/socials': 'Social Links | Tamdev CMS',
-  '/admin/customize': 'Online Site & Themes | Tamdev CMS',
+  '/admin/customize': 'Themes | Tamdev CMS',
 };
 
 export function AdminLayout() {
@@ -109,7 +109,7 @@ export function AdminLayout() {
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition ${
                     isActive
-                      ? 'bg-neutral-800 text-white'
+                      ? 'bg-orange-600/15 text-orange-400 border border-orange-500/30'
                       : 'text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-100'
                   }`
                 }
@@ -154,7 +154,7 @@ export function AdminLayout() {
           href="/"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-neutral-400 hover:bg-neutral-800/60 hover:text-white transition"
+          className="md:hidden flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-neutral-400 hover:bg-neutral-800/60 hover:text-white transition"
         >
           <span>View Live Site</span>
           <ExternalLink size={13} />
@@ -193,7 +193,7 @@ export function AdminLayout() {
             Tamdev CMS
           </span>
         </div>
-        <a
+        {/* <a
           href="/"
           target="_blank"
           rel="noreferrer"
@@ -201,7 +201,7 @@ export function AdminLayout() {
         >
           <span>Live</span>
           <ExternalLink size={12} />
-        </a>
+        </a> */}
       </header>
 
       {/* Mobile Slide-Over Sidebar Drawer */}
