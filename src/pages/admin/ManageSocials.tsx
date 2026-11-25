@@ -2,6 +2,7 @@ import { useEffect, useState, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { SocialLink } from '../../types/cms';
+import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
 import { LEGACY_SOCIALS } from '../../data/LegacySocials';
 
 const DEFAULT_CONTACT_TITLE = "Let's\nConnect";
@@ -171,16 +172,35 @@ export default function ManageSocials() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this social link permanently?')) return;
-    const { error } = await supabase.from('social_links').delete().eq('id', id);
-    if (!error) fetchData();
+  const [confirmAction, setConfirmAction] = useState<
+    { type: 'delete'; item: SocialLink } | { type: 'import' } | null
+  >(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
+
+  const handleDelete = (item: SocialLink) => {
+    setConfirmAction({ type: 'delete', item });
   };
 
-  const handleImportLegacy = async () => {
-    if (!confirm('Import your 4 existing social/contact links into Supabase?')) return;
-    setImporting(true);
+  const handleImportLegacy = () => {
+    setConfirmAction({ type: 'import' });
+  };
 
+  const executeConfirmAction = async () => {
+    if (!confirmAction) return;
+    setConfirmBusy(true);
+
+    if (confirmAction.type === 'delete') {
+      const { error } = await supabase
+        .from('social_links')
+        .delete()
+        .eq('id', confirmAction.item.id);
+      setConfirmBusy(false);
+      setConfirmAction(null);
+      if (!error) fetchData();
+      return;
+    }
+
+    setImporting(true);
     try {
       const existingUrls = new Set(socials.map((s) => s.url.toLowerCase()));
       const toInsert = LEGACY_SOCIALS.filter(
@@ -199,11 +219,12 @@ export default function ManageSocials() {
       }
 
       await fetchData();
-      alert('Existing social links imported successfully!');
+      setConfirmAction(null);
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Failed to import social links');
     } finally {
       setImporting(false);
+      setConfirmBusy(false);
     }
   };
 
@@ -325,7 +346,7 @@ export default function ManageSocials() {
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDelete(item.id)}
+                  onClick={() => handleDelete(item)}
                   className="px-3 py-1.5 text-xs rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 transition"
                 >
                   Delete
@@ -548,6 +569,35 @@ export default function ManageSocials() {
         </motion.div>
       )}
     </AnimatePresence>
+
+    <ConfirmDialog
+      open={Boolean(confirmAction)}
+      variant={confirmAction?.type === 'delete' ? 'danger' : 'primary'}
+      title={
+        confirmAction?.type === 'delete'
+          ? 'Delete social link?'
+          : 'Import existing social links?'
+      }
+      description={
+        confirmAction?.type === 'delete' ? (
+          <>
+            <span className="text-neutral-200 font-medium">
+              "{confirmAction.item.label || confirmAction.item.platform}"
+            </span>{' '}
+            will be permanently deleted. This action cannot be undone.
+          </>
+        ) : (
+          'Import your 4 existing social and contact links into Supabase?'
+        )
+      }
+      confirmLabel={
+        confirmAction?.type === 'delete' ? 'Delete permanently' : 'Import links'
+      }
+      busyLabel={confirmAction?.type === 'delete' ? 'Deleting...' : 'Importing...'}
+      busy={confirmBusy}
+      onConfirm={executeConfirmAction}
+      onCancel={() => setConfirmAction(null)}
+    />
     </div>
   );
 }

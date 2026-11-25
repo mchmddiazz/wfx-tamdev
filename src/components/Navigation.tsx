@@ -3,11 +3,50 @@ import { supabase } from '../lib/supabase';
 import defaultResumePdf from '../assets/resume.pdf';
 import { Menu, X } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
-import resume from '../assets/resume.pdf';
 import { motion, AnimatePresence } from 'framer-motion';
+import { HeaderDisplayMode } from '../types/cms';
 
 
-export default function Navigation() {
+export interface NavItem {
+  id: string;
+  label: string;
+}
+
+const DEFAULT_NAV_ITEMS: NavItem[] = [
+  { id: 'intro', label: 'Intro' },
+  { id: 'about', label: 'About' },
+  { id: 'background', label: 'Background' },
+  { id: 'work', label: 'Work' },
+  { id: 'contact', label: 'Contact' },
+];
+
+export default function Navigation({
+  items,
+  settings,
+}: {
+  items?: NavItem[];
+  settings?: Record<string, any>;
+}) {
+  const navItems = items && items.length > 0 ? items : DEFAULT_NAV_ITEMS;
+  const displayMode = (settings?.displayMode as HeaderDisplayMode) || 'text';
+  const brandText = (settings?.brandText as string) || 'Tamdev.';
+  const logoUrl = typeof settings?.logoUrl === 'string' ? settings.logoUrl.trim() : '';
+  const parsedLogoSize = Number(settings?.logoSize);
+  const logoSize =
+    Number.isFinite(parsedLogoSize) && parsedLogoSize > 0
+      ? Math.min(64, Math.max(16, parsedLogoSize))
+      : displayMode === 'logo'
+        ? 28
+        : 24;
+  const logoRounded = (settings?.logoRounded as string) || 'lg';
+  const showResumeLink = settings?.showResumeLink !== false;
+  const resumeLabel = (settings?.resumeLabel as string) || 'Resume*';
+  const rawResumePdfUrl = settings?.resumePdfUrl as string | undefined;
+  const resumePdfUrl =
+    typeof rawResumePdfUrl === 'string' && rawResumePdfUrl.trim().length > 0
+      ? rawResumePdfUrl
+      : undefined;
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('intro');
@@ -39,7 +78,41 @@ export default function Navigation() {
       isActive(section) ? '!text-orange-600 dark:!text-orange-600 font-medium' : ''
     }`;
 
-  const [resumeUrl, setResumeUrl] = useState<string>(defaultResumePdf);
+  const [fallbackResumeUrl, setFallbackResumeUrl] = useState<string>(defaultResumePdf);
+
+  const logoShapeClass =
+    logoRounded === 'none'
+      ? ''
+      : logoRounded === 'full'
+        ? 'rounded-full border border-neutral-300/70 dark:border-neutral-700/70'
+        : 'rounded-lg border border-neutral-300/70 dark:border-neutral-700/70';
+
+  const renderBrand = () => {
+    if (displayMode === 'logo' && logoUrl) {
+      return (
+        <img
+          src={logoUrl}
+          alt={brandText}
+          style={{ height: `${logoSize}px`, width: 'auto' }}
+          className={`object-contain ${logoShapeClass}`}
+        />
+      );
+    }
+    if (displayMode === 'logo_with_text' && logoUrl) {
+      return (
+        <span className="flex items-center gap-2">
+          <img
+            src={logoUrl}
+            alt={brandText}
+            style={{ height: `${logoSize}px`, width: 'auto' }}
+            className={`object-contain ${logoShapeClass}`}
+          />
+          <span>{brandText}</span>
+        </span>
+      );
+    }
+    return <>{brandText}</>;
+  };
 
   // Framer Motion variants
   const menuVariants = {
@@ -63,6 +136,8 @@ export default function Navigation() {
   };
 
   useEffect(() => {
+    if (resumePdfUrl !== undefined) return;
+    let active = true;
     async function loadResume() {
       const { data, error } = await supabase
         .from('site_profile')
@@ -70,12 +145,17 @@ export default function Navigation() {
         .eq('id', 1)
         .single();
 
-      if (!error && data?.resume_pdf_url) {
-        setResumeUrl(data.resume_pdf_url);
+      if (active && !error && data?.resume_pdf_url) {
+        setFallbackResumeUrl(data.resume_pdf_url);
       }
     }
     loadResume();
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [resumePdfUrl]);
+
+  const resumeUrl = resumePdfUrl || fallbackResumeUrl;
 
   return (
     <>
@@ -92,34 +172,38 @@ export default function Navigation() {
           >
             <motion.div className="h-full flex flex-col justify-start items-start px-8 pb-8 pt-20 space-y-6">
               <div className="space-y-6 w-full">
-                {['intro', 'about', 'background', 'work', 'contact'].map(sec => (
+                {navItems.map(item => (
                   <motion.a
-                    key={sec}
-                    href={`#${sec}`}
+                    key={item.id}
+                    href={`#${item.id}`}
                     variants={linkVariants}
                     className={
-                      `${mobileNavLinkClass(sec)} py-1 pl-2 pr-6 relative transition-all flex items-center justify-between` +
-                      (isActive(sec)
+                      `${mobileNavLinkClass(item.id)} py-1 pl-2 pr-6 relative transition-all flex items-center justify-between` +
+                      (isActive(item.id)
                         ? ' !text-orange-600 dark:!text-orange-600 font-medium'
                         : ' hover:pl-3')
                     }
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <span>{sec.charAt(0).toUpperCase() + sec.slice(1)}</span>
+                    <span>{item.label}</span>
                   </motion.a>
                 ))}
                 {/* Divider above Resume */}
-                <div className="border-t border-neutral-300 dark:border-neutral-800 pt-4 mt-2 w-full">
-                  <motion.a
-                    href={resume}
-                    download
-                    variants={linkVariants}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="underline decoration-dotted underline-offset-2 text-neutral-500 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-600 transition-colors text-xl font-gambarino tracking-tight leading-none flex items-center gap-1 pt-2"
-                  >
-                    Resume*
-                  </motion.a>
-                </div>
+                {showResumeLink && (
+                  <div className="border-t border-neutral-300 dark:border-neutral-800 pt-4 mt-2 w-full">
+                    <motion.a
+                      href={resumeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      download="resume.pdf"
+                      variants={linkVariants}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="underline decoration-dotted underline-offset-2 text-neutral-500 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-600 transition-colors text-xl font-gambarino tracking-tight leading-none flex items-center gap-1 pt-2"
+                    >
+                      {resumeLabel}
+                    </motion.a>
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -135,42 +219,44 @@ export default function Navigation() {
       >
         <div className="p-8 flex flex-col h-full">
           <a href="#intro" className="text-xl font-gambarino text-orange-600 dark:text-orange-600 hover:text-orange-800 dark:hover:text-orange-800 transition-colors tracking-tight leading-none">
-            Tamdev.
+            {renderBrand()}
           </a>
           <div className="flex-1 flex flex-col justify-center space-y-4">
-            {['intro', 'about', 'background', 'work', 'contact'].map((sec, idx) => (
+            {navItems.map((item, idx) => (
               <motion.a
-                key={sec}
+                key={item.id}
                 initial={{ x: -10, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.08 * idx }}
                 whileHover={{ x: 4 }}
-                href={`#${sec}`}
-                className={`${navLinkClass(sec)} flex items-center gap-2`}
+                href={`#${item.id}`}
+                className={`${navLinkClass(item.id)} flex items-center gap-2`}
               >
-                {isActive(sec) && (
+                {isActive(item.id) && (
                   <motion.span
                     layoutId="activeNavIndicator"
                     className="w-1.5 h-1.5 rounded-full bg-orange-600 inline-block"
                     transition={{ type: 'spring', stiffness: 380, damping: 28 }}
                   />
                 )}
-                <span>{sec.charAt(0).toUpperCase() + sec.slice(1)}</span>
+                <span>{item.label}</span>
               </motion.a>
             ))}
-            <motion.a
-              initial={{ x: -10, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.08 * 5 }}
-              whileHover={{ x: 4 }}
-              href={resumeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              download="resume.pdf"
-              className="underline decoration-dotted underline-offset-2 text-neutral-500 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-600 transition-colors text-md font-gambarino tracking-tight leading-none flex items-center gap-1"
-            >
-              Resume*
-            </motion.a>
+            {showResumeLink && (
+              <motion.a
+                initial={{ x: -10, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.08 * 5 }}
+                whileHover={{ x: 4 }}
+                href={resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                download="resume.pdf"
+                className="underline decoration-dotted underline-offset-2 text-neutral-500 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-600 transition-colors text-md font-gambarino tracking-tight leading-none flex items-center gap-1"
+              >
+                {resumeLabel}
+              </motion.a>
+            )}
           </div>
           <motion.div
             initial={{ x: -10, opacity: 0 }}
@@ -191,7 +277,7 @@ export default function Navigation() {
         className="lg:hidden fixed top-0 left-0 right-0 z-[101] flex items-center justify-between px-6 py-4 bg-gradient-to-b from-neutral-200 to-transparent dark:from-black dark:to-transparent"
       >
         <a href="#intro" className="text-xl font-gambarino text-orange-600 dark:text-orange-600 hover:text-orange-800 dark:hover:text-orange-800 transition-colors tracking-tight leading-none">
-          Tamdev.
+          {renderBrand()}
         </a>
         <div className="flex items-center space-x-3">
           <ThemeToggle />
