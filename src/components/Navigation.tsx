@@ -30,7 +30,15 @@ export default function Navigation({
   const navItems = items && items.length > 0 ? items : DEFAULT_NAV_ITEMS;
   const displayMode = (settings?.displayMode as HeaderDisplayMode) || 'text';
   const brandText = (settings?.brandText as string) || 'Tamdev.';
-  const logoUrl = (settings?.logoUrl as string) || '';
+  const logoUrl = typeof settings?.logoUrl === 'string' ? settings.logoUrl.trim() : '';
+  const parsedLogoSize = Number(settings?.logoSize);
+  const logoSize =
+    Number.isFinite(parsedLogoSize) && parsedLogoSize > 0
+      ? Math.min(64, Math.max(16, parsedLogoSize))
+      : displayMode === 'logo'
+        ? 28
+        : 24;
+  const logoRounded = (settings?.logoRounded as string) || 'lg';
   const showResumeLink = settings?.showResumeLink !== false;
   const resumeLabel = (settings?.resumeLabel as string) || 'Resume*';
   const rawResumePdfUrl = settings?.resumePdfUrl as string | undefined;
@@ -72,14 +80,33 @@ export default function Navigation({
 
   const [fallbackResumeUrl, setFallbackResumeUrl] = useState<string>(defaultResumePdf);
 
+  const logoShapeClass =
+    logoRounded === 'none'
+      ? ''
+      : logoRounded === 'full'
+        ? 'rounded-full border border-neutral-300/70 dark:border-neutral-700/70'
+        : 'rounded-lg border border-neutral-300/70 dark:border-neutral-700/70';
+
   const renderBrand = () => {
     if (displayMode === 'logo' && logoUrl) {
-      return <img src={logoUrl} alt={brandText} className="h-7 w-auto object-contain" />;
+      return (
+        <img
+          src={logoUrl}
+          alt={brandText}
+          style={{ height: `${logoSize}px`, width: 'auto' }}
+          className={`object-contain ${logoShapeClass}`}
+        />
+      );
     }
     if (displayMode === 'logo_with_text' && logoUrl) {
       return (
         <span className="flex items-center gap-2">
-          <img src={logoUrl} alt={brandText} className="h-6 w-auto object-contain" />
+          <img
+            src={logoUrl}
+            alt={brandText}
+            style={{ height: `${logoSize}px`, width: 'auto' }}
+            className={`object-contain ${logoShapeClass}`}
+          />
           <span>{brandText}</span>
         </span>
       );

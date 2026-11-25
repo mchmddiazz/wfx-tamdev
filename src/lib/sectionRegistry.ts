@@ -6,6 +6,7 @@ export type FieldType =
   | 'textarea'
   | 'toggle'
   | 'select'
+  | 'range'
   | 'image'
   | 'file'
   | 'block_list';
@@ -16,6 +17,10 @@ export interface SectionFieldSchema {
   type: FieldType;
   placeholder?: string;
   options?: { label: string; value: string }[];
+  min?: number;
+  max?: number;
+  step?: number;
+  unit?: string;
   uploadFolder?: StorageFolder;
   blockType?: 'projects' | 'experience' | 'certificates';
 }
@@ -45,6 +50,8 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDefinition> = {
       displayMode: 'text',
       brandText: 'Tamdev.',
       logoUrl: '',
+      logoSize: 28,
+      logoRounded: 'lg',
       showResumeLink: true,
       resumeLabel: 'Resume*',
       resumePdfUrl: '',
@@ -72,6 +79,25 @@ export const SECTION_REGISTRY: Record<SectionType, SectionDefinition> = {
         type: 'image',
         placeholder: 'https://...',
         uploadFolder: 'logos',
+      },
+      {
+        key: 'logoSize',
+        label: 'Logo Size',
+        type: 'range',
+        min: 16,
+        max: 64,
+        step: 2,
+        unit: 'px',
+      },
+      {
+        key: 'logoRounded',
+        label: 'Logo Border Radius',
+        type: 'select',
+        options: [
+          { label: 'Rounded', value: 'lg' },
+          { label: 'Circle', value: 'full' },
+          { label: 'Square (None)', value: 'none' },
+        ],
       },
       {
         key: 'showResumeLink',

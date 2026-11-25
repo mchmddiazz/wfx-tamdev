@@ -933,6 +933,37 @@ export default function CustomizeSite() {
                         );
                       }
 
+                      if (field.type === 'range') {
+                        const min = field.min ?? 16;
+                        const max = field.max ?? 64;
+                        const step = field.step ?? 2;
+                        const numVal = Number(val) || min;
+                        return (
+                          <div key={field.key} className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="block text-xs text-neutral-400">
+                                {field.label}
+                              </label>
+                              <span className="text-xs font-mono text-orange-400">
+                                {numVal}
+                                {field.unit || ''}
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min={min}
+                              max={max}
+                              step={step}
+                              value={numVal}
+                              onChange={(e) =>
+                                updateSelectedSetting(field.key, Number(e.target.value))
+                              }
+                              className="w-full accent-orange-600 cursor-pointer"
+                            />
+                          </div>
+                        );
+                      }
+
                       if (field.type === 'image' || field.type === 'file') {
                         const isPdf = field.type === 'file';
                         const folder: StorageFolder =
