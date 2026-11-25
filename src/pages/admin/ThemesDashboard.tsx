@@ -262,11 +262,16 @@ export default function ThemesDashboard() {
     }
   };
 
-  const renderThemeMenu = (theme: SiteTheme, align: 'left' | 'right' = 'right') => {
+  const renderThemeMenu = (
+    theme: SiteTheme,
+    align: 'left' | 'right' = 'right',
+    direction: 'down' | 'up' = 'down'
+  ) => {
     const isOpen = openMenuId === theme.id;
     const previewHref =
       theme.is_live || theme.id === 'default-live' ? '/' : `/?previewThemeId=${theme.id}`;
     const alignClass = align === 'left' ? 'left-0 sm:left-auto sm:right-0' : 'right-0';
+    const dirClass = direction === 'up' ? 'bottom-full mb-2' : 'mt-2';
 
     return (
       <div className="relative" onClick={(e) => e.stopPropagation()}>
@@ -280,7 +285,7 @@ export default function ThemesDashboard() {
         </button>
 
         {isOpen && (
-          <div className={`absolute ${alignClass} mt-2 w-56 rounded-xl bg-neutral-900 border border-neutral-800 shadow-2xl py-1.5 z-40 text-xs`}>
+          <div className={`absolute ${alignClass} ${dirClass} w-56 rounded-xl bg-neutral-900 border border-neutral-800 shadow-2xl py-1.5 z-40 text-xs`}>
             <a
               href={previewHref}
               target="_blank"
@@ -353,7 +358,7 @@ export default function ThemesDashboard() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-24">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
@@ -563,7 +568,7 @@ export default function ThemesDashboard() {
           </div>
         ) : (
           <div className="space-y-3">
-            {draftThemes.map((theme) => (
+            {draftThemes.map((theme, idx) => (
               <div
                 key={theme.id}
                 className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-neutral-900/70 border border-neutral-800 p-4 rounded-xl hover:border-neutral-700 transition"
@@ -643,7 +648,7 @@ export default function ThemesDashboard() {
                   >
                     Edit theme
                   </Link>
-                  {renderThemeMenu(theme)}
+                  {renderThemeMenu(theme, 'right', idx === draftThemes.length - 1 ? 'up' : 'down')}
                 </div>
               </div>
             ))}
