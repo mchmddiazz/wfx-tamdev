@@ -3,3 +3,22 @@ prompt.md
 .vercel
 .env*
 dist
+.DS_Store
+
+# AI & planning artifacts
+.superpowers/
+docs/superpowers/
+.docs/superpowers/
+design.md
+CHANGELOG.md
+changelog.md
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+.claude/
+.cursor/
+.gemini/
+.agent/
+.agents/
+.windsurf/
+.codex/
