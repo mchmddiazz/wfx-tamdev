@@ -7,12 +7,14 @@ const NAV_ITEMS = [
   { to: '/admin/projects', label: 'Projects' },
   { to: '/admin/profile', label: 'Profile & Resume' },
   { to: '/admin/socials', label: 'Social Links' },
+  { to: '/admin/experience', label: 'Work Experience' },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
   '/admin/projects': 'Projects | Tamdev CMS',
   '/admin/profile': 'Profile & Resume | Tamdev CMS',
   '/admin/socials': 'Social Links | Tamdev CMS',
+  '/admin/experience': 'Work Experience | Tamdev CMS',
 };
 
 export function AdminLayout() {

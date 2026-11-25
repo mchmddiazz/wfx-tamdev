@@ -34,3 +34,16 @@ export interface SocialLink {
   is_active: boolean;
   created_at: string;
 }
+
+export interface WorkExperience {
+  id: string;
+  company: string;
+  role: string;
+  period: string;
+  city?: string;
+  description: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}

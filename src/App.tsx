@@ -22,6 +22,7 @@ import { AdminLayout } from './layouts/AdminLayout';
 import ManageProjects from './pages/admin/ManageProjects';
 import ManageProfile from './pages/admin/ManageProfile';
 import ManageSocials from './pages/admin/ManageSocials';
+import ManageWorkExperience from './pages/admin/ManageWorkExperience';
 
 function PortfolioPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -94,6 +95,7 @@ function AnimatedAppRoutes() {
               <Route path="/admin/projects" element={<ManageProjects />} />
               <Route path="/admin/profile" element={<ManageProfile />} />
               <Route path="/admin/socials" element={<ManageSocials />} />
+              <Route path="/admin/experience" element={<ManageWorkExperience />} />
             </Route>
           </Route>
 
