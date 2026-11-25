@@ -1,8 +1,15 @@
 import { supabase } from './supabase';
 
+export type StorageFolder =
+  | 'projects'
+  | 'profile'
+  | 'resume'
+  | 'logos'
+  | 'certificates';
+
 export async function uploadPortfolioFile(
   file: File,
-  folder: 'projects' | 'profile' | 'resume'
+  folder: StorageFolder
 ): Promise<string> {
   const fileExt = file.name.split('.').pop();
   const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
