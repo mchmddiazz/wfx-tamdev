@@ -1,40 +1,26 @@
 -- ============================================================
--- QUICK FIX: Repair RLS policies on existing work_experiences
--- Run this in Supabase Dashboard > SQL Editor
+-- QUICK FIX: Repair RLS on existing work_experiences table
+-- Use this if the table already exists (skip the create above)
+-- Run in Supabase Dashboard > SQL Editor
 -- ============================================================
 
--- Drop the broken policy (if it was created)
+-- Drop any previously created policies
 drop policy if exists "Authenticated full access" on public.work_experiences;
 drop policy if exists "Public read access" on public.work_experiences;
 drop policy if exists "Authenticated insert" on public.work_experiences;
 drop policy if exists "Authenticated update" on public.work_experiences;
 drop policy if exists "Authenticated delete" on public.work_experiences;
+drop policy if exists "Public read work_experiences" on public.work_experiences;
+drop policy if exists "Admin manage work_experiences" on public.work_experiences;
 
--- Allow public read (portfolio visitors)
-create policy "Public read access"
-  on public.work_experiences
-  for select
-  to anon, authenticated
-  using (true);
+-- Apply grants (this was the missing piece)
+grant select on public.work_experiences to anon, authenticated;
+grant insert, update, delete on public.work_experiences to authenticated;
 
--- Allow CMS (logged-in users) to insert
-create policy "Authenticated insert"
-  on public.work_experiences
-  for insert
-  to authenticated
-  with check (true);
+-- Public read
+create policy "Public read work_experiences"
+  on public.work_experiences for select to anon, authenticated using (true);
 
--- Allow CMS to update
-create policy "Authenticated update"
-  on public.work_experiences
-  for update
-  to authenticated
-  using (true)
-  with check (true);
-
--- Allow CMS to delete
-create policy "Authenticated delete"
-  on public.work_experiences
-  for delete
-  to authenticated
-  using (true);
+-- Admin full access
+create policy "Admin manage work_experiences"
+  on public.work_experiences for all to authenticated using (true) with check (true);

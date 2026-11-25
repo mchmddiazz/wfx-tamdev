@@ -1,57 +1,38 @@
 -- ============================================================
--- Migration: create work_experiences table
--- Run this in your Supabase SQL Editor (Dashboard > SQL Editor)
+-- Migration: work_experiences table
+-- Matches the pattern of site_profile / projects setup
+-- Run in Supabase Dashboard > SQL Editor
 -- ============================================================
 
-create table if not exists public.work_experiences (
+-- 1. Create Table
+create table public.work_experiences (
   id          uuid primary key default gen_random_uuid(),
   company     text not null,
   role        text not null,
   period      text not null,
   city        text,
   description text not null,
-  sort_order  integer not null default 1,
+  sort_order  int not null default 1,
   is_active   boolean not null default true,
   created_at  timestamptz default now(),
-  updated_at  timestamptz
+  updated_at  timestamptz default now()
 );
 
--- Enable Row Level Security
+-- 2. Enable RLS & Grants  (same pattern as site_profile / projects)
 alter table public.work_experiences enable row level security;
 
--- Allow public read access (portfolio site, unauthenticated visitors)
-create policy "Public read access"
-  on public.work_experiences
-  for select
-  to anon, authenticated
-  using (true);
+grant select on public.work_experiences to anon, authenticated;
+grant insert, update, delete on public.work_experiences to authenticated;
 
--- Allow authenticated users (CMS) to insert
-create policy "Authenticated insert"
-  on public.work_experiences
-  for insert
-  to authenticated
-  with check (true);
+-- 3. Public Read Policy
+create policy "Public read work_experiences"
+  on public.work_experiences for select to anon, authenticated using (true);
 
--- Allow authenticated users (CMS) to update
-create policy "Authenticated update"
-  on public.work_experiences
-  for update
-  to authenticated
-  using (true)
-  with check (true);
+-- 4. Admin Write Policy
+create policy "Admin manage work_experiences"
+  on public.work_experiences for all to authenticated using (true) with check (true);
 
--- Allow authenticated users (CMS) to delete
-create policy "Authenticated delete"
-  on public.work_experiences
-  for delete
-  to authenticated
-  using (true);
-
--- ============================================================
--- Seed: existing hard-coded experiences from Background.tsx
--- ============================================================
-
+-- 5. Seed: existing hard-coded experiences from Background.tsx
 insert into public.work_experiences (company, role, period, city, description, sort_order, is_active)
 values
   (
