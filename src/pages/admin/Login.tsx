@@ -23,7 +23,7 @@ export default function Login() {
       setError(error.message);
       setLoading(false);
     } else {
-      navigate('/admin/themes');
+      navigate('/admin/customize');
     }
   };
 
