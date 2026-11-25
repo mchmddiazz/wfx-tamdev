@@ -19,15 +19,34 @@ create table if not exists public.work_experiences (
 -- Enable Row Level Security
 alter table public.work_experiences enable row level security;
 
--- Allow public read access (for the portfolio site)
+-- Allow public read access (portfolio site, unauthenticated visitors)
 create policy "Public read access"
-  on public.work_experiences for select
+  on public.work_experiences
+  for select
+  to anon, authenticated
   using (true);
 
--- Allow authenticated users full access (for the CMS)
-create policy "Authenticated full access"
-  on public.work_experiences for all
-  using (auth.role() = 'authenticated');
+-- Allow authenticated users (CMS) to insert
+create policy "Authenticated insert"
+  on public.work_experiences
+  for insert
+  to authenticated
+  with check (true);
+
+-- Allow authenticated users (CMS) to update
+create policy "Authenticated update"
+  on public.work_experiences
+  for update
+  to authenticated
+  using (true)
+  with check (true);
+
+-- Allow authenticated users (CMS) to delete
+create policy "Authenticated delete"
+  on public.work_experiences
+  for delete
+  to authenticated
+  using (true);
 
 -- ============================================================
 -- Seed: existing hard-coded experiences from Background.tsx
