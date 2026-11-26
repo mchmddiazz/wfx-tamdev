@@ -1,5 +1,7 @@
 import { useState, useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom';
+import Sidebar from './components/Sidebar/Sidebar';
+import TopBar from './components/TopBar/TopBar';
+import { useTheme } from './contexts/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -25,6 +27,10 @@ import CustomizeSite from './pages/admin/CustomizeSite';
 import CustomizePreview from './pages/admin/CustomizePreview';
 
 function PortfolioPage() {
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const { theme } = useTheme();
+  const toggleSidebar = () => setSidebarVisible(prev => !prev);
+  // ... existing code remains unchanged
   const [searchParams] = useSearchParams();
   const previewThemeId = searchParams.get('previewThemeId');
   const [isLoading, setIsLoading] = useState(true);
@@ -98,7 +104,8 @@ function PortfolioPage() {
           >
             <ScrollProgress />
             {headerSection?.is_visible !== false && (
-              <Navigation items={navItems} settings={headerSection?.published_settings} />
+              <TopBar themeName={theme} onToggleSidebar={toggleSidebar} />
+          <Sidebar items={navItems} visible={sidebarVisible} />
             )}
             <main>
               {visibleSections.map((section) => (

@@ -1,10 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 type Theme = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
+  activeThemeName: Theme;
+  themeDraft: any;
+  saveDraft: (draft: any) => Promise<void>;
+  publishTheme: () => Promise<void>;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -26,11 +31,26 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  };
+
+  const activeThemeName = theme;
+  const [themeDraft, setThemeDraft] = useState<any>(null);
+
+  const saveDraft = async (draft: any) => {
+    setThemeDraft(draft);
+    await supabase.from('site_theme_drafts').upsert({ name: activeThemeName, draft });
+  };
+
+  const publishTheme = async () => {
+    if (!themeDraft) return;
+    await supabase.from('site_themes').upsert({ name: activeThemeName, theme: themeDraft });
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider
+      value={{ theme, toggleTheme, activeThemeName, themeDraft, saveDraft, publishTheme }}
+    >
       {children}
     </ThemeContext.Provider>
   );
