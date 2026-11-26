@@ -1,4 +1,2 @@
 allowBuilds:
-  '@parcel/watcher': set this to true or false
-  esbuild: false
-  pnpm: false
+  esbuild: set this to true or false

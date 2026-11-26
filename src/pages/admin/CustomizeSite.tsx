@@ -15,6 +15,12 @@ import {
   Upload,
   Database,
   Lock,
+  PanelLeft,
+  MoreHorizontal,
+  Code2,
+  BookOpen,
+  Keyboard,
+  HelpCircle,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import {
@@ -50,6 +56,11 @@ export default function CustomizeSite() {
   const [tableMissing, setTableMissing] = useState(false);
 
   const [sidebarView, setSidebarView] = useState<SidebarView>('list');
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+  );
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [uploadingField, setUploadingField] = useState<string | null>(null);
@@ -61,6 +72,24 @@ export default function CustomizeSite() {
     document.title = 'Customize Site | Tamdev CMS';
     fetchSections();
   }, []);
+
+  useEffect(() => {
+    if (!moreMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setMoreMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMoreMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [moreMenuOpen]);
 
   // Sync sections & selection to preview iframe
   const postPreviewUpdate = (nextSections: SiteSection[], nextSelectedId: string | null) => {
@@ -86,6 +115,7 @@ export default function CustomizeSite() {
       } else if (event.data?.type === 'TAMDEV_PREVIEW_SELECT' && event.data.id) {
         setSelectedId(event.data.id);
         setSidebarView('inspect');
+        setSidebarOpen(true);
       }
     };
     window.addEventListener('message', handleMessage);
@@ -461,20 +491,59 @@ export default function CustomizeSite() {
   return (
     <div className="h-screen flex flex-col bg-neutral-950 text-neutral-100 overflow-hidden">
       {/* Top Shopify-style Customizer Bar */}
-      <header className="h-14 shrink-0 border-b border-neutral-800 bg-neutral-900 px-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/admin/customize"
-            className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white px-2.5 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition"
-          >
-            <ArrowLeft size={14} />
-            <span>Back to Themes</span>
-          </Link>
-          <span className="font-bold text-sm text-orange-500 tracking-tight hidden sm:inline truncate max-w-[200px]">
+      <header className="h-14 shrink-0 border-b border-neutral-800 bg-neutral-900 px-3 md:px-4 flex items-center justify-between gap-2 md:gap-4">
+        {/* Left: Back to Themes + Sidebar Toggle + (Mobile) 2-line Theme Name & Status */}
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Link
+              to="/admin/customize"
+              title="Back to Themes"
+              aria-label="Back to Themes"
+              className="h-8 w-8 md:w-auto md:px-3 inline-flex items-center justify-center gap-1.5 text-xs text-neutral-300 hover:text-white rounded-lg border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 transition"
+            >
+              <ArrowLeft size={15} />
+              <span className="hidden md:inline">Back to Themes</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              aria-label={sidebarOpen ? 'Hide section sidebar' : 'Show section sidebar'}
+              aria-pressed={sidebarOpen}
+              title={sidebarOpen ? 'Hide section sidebar' : 'Show section sidebar'}
+              className={`h-8 w-8 inline-flex items-center justify-center rounded-lg border transition ${
+                sidebarOpen
+                  ? 'bg-orange-500/15 text-orange-400 border-orange-500/30 hover:bg-orange-500/25'
+                  : 'bg-neutral-800 text-neutral-400 border-neutral-700 hover:text-white hover:bg-neutral-700'
+              }`}
+            >
+              <PanelLeft size={15} />
+            </button>
+          </div>
+
+          {/* Mobile 2-line theme name + status */}
+          <div className="flex md:hidden flex-col justify-center min-w-0 leading-tight">
+            <span className="font-semibold text-xs text-orange-500 tracking-tight truncate max-w-[135px]">
+              {themeName}
+            </span>
+            <span
+              className={`mt-0.5 w-fit text-[10px] leading-none px-1.5 py-0.5 rounded-full border ${
+                !isThemeLive || hasDraftChanges
+                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+              }`}
+            >
+              {isThemeLive ? (hasDraftChanges ? 'Unsaved' : 'Live') : 'Draft'}
+            </span>
+          </div>
+        </div>
+
+        {/* Center (Desktop): Active Theme Name + Status */}
+        <div className="hidden md:flex items-center justify-center gap-2.5 min-w-0">
+          <span className="font-bold text-sm text-orange-500 tracking-tight truncate max-w-[220px]">
             {themeName}
           </span>
           <span
-            className={`text-[10px] px-2 py-0.5 rounded-full border ${
+            className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full border ${
               !isThemeLive || hasDraftChanges
                 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                 : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
@@ -483,58 +552,171 @@ export default function CustomizeSite() {
             {isThemeLive ? (hasDraftChanges ? 'Unsaved' : 'Live') : 'Draft'}
           </span>
           {statusMsg && (
-            <span className="text-xs text-emerald-400 flex items-center gap-1">
+            <span className="text-xs text-emerald-400 flex items-center gap-1 shrink-0">
               <Check size={13} /> {statusMsg}
             </span>
           )}
         </div>
 
-        {/* Center: Viewport Switcher */}
-        <div className="hidden md:flex items-center bg-neutral-800 rounded-lg p-1 border border-neutral-700">
-          <button
-            type="button"
-            onClick={() => setPreviewMode('desktop')}
-            className={`p-1.5 rounded transition ${
-              previewMode === 'desktop'
-                ? 'bg-neutral-700 text-white'
-                : 'text-neutral-400 hover:text-white'
-            }`}
-            title="Desktop Preview"
-          >
-            <Monitor size={15} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setPreviewMode('mobile')}
-            className={`p-1.5 rounded transition ${
-              previewMode === 'mobile'
-                ? 'bg-neutral-700 text-white'
-                : 'text-neutral-400 hover:text-white'
-            }`}
-            title="Mobile Preview"
-          >
-            <Smartphone size={15} />
-          </button>
-        </div>
+        {/* Right: (Desktop) Viewport Switcher + Save Draft, (All) Theme Options + Publish */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="hidden md:inline-flex h-8 items-center bg-neutral-800 rounded-lg p-0.5 border border-neutral-700 shrink-0">
+            <button
+              type="button"
+              onClick={() => setPreviewMode('desktop')}
+              className={`h-7 w-7 inline-flex items-center justify-center rounded-md transition ${
+                previewMode === 'desktop'
+                  ? 'bg-neutral-700 text-white'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+              title="Desktop Preview"
+              aria-label="Desktop Preview"
+            >
+              <Monitor size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviewMode('mobile')}
+              className={`h-7 w-7 inline-flex items-center justify-center rounded-md transition ${
+                previewMode === 'mobile'
+                  ? 'bg-neutral-700 text-white'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+              title="Mobile Preview"
+              aria-label="Mobile Preview"
+            >
+              <Smartphone size={14} />
+            </button>
+          </div>
 
-        {/* Right: Save Draft & Publish */}
-        <div className="flex items-center gap-2">
-          <button
+          {/* <button
             type="button"
             onClick={() => persistSections(false)}
             disabled={saving || publishing}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 disabled:opacity-50 transition"
+            className="hidden md:inline-flex h-8 px-3 items-center justify-center text-xs font-medium rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 disabled:opacity-50 transition"
           >
             {saving ? 'Saving...' : 'Save Draft'}
-          </button>
-          <button
-            type="button"
-            onClick={() => persistSections(true)}
-            disabled={saving || publishing}
-            className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50 transition"
-          >
-            {publishing ? 'Publishing...' : 'Publish'}
-          </button>
+          </button> */}
+            {/* Theme Options Dropdown */}
+            <div className="relative" ref={moreMenuRef}>
+              <button
+                type="button"
+                onClick={() => setMoreMenuOpen((prev) => !prev)}
+                aria-label="Theme options"
+                aria-expanded={moreMenuOpen}
+                title="Theme options"
+                className={`h-8 w-8 inline-flex items-center justify-center rounded-lg border transition ${
+                  moreMenuOpen
+                    ? 'bg-neutral-700 text-white border-neutral-600'
+                    : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:text-white hover:bg-neutral-700'
+                }`}
+              >
+                <MoreHorizontal size={15} />
+              </button>
+
+              {moreMenuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2 w-60 rounded-xl border border-neutral-800 bg-neutral-900 shadow-2xl py-1.5 z-50 text-xs text-neutral-200"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    disabled={saving || publishing}
+                    onClick={() => {
+                      setMoreMenuOpen(false);
+                      persistSections(false);
+                    }}
+                    className="md:hidden w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-neutral-800 disabled:opacity-50 transition text-left text-orange-400 font-medium"
+                  >
+                    <Check size={14} className="shrink-0" />
+                    <span>{saving ? 'Saving...' : 'Save Draft'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setMoreMenuOpen(false);
+                      setSidebarOpen(true);
+                      setSidebarView('list');
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-neutral-800 transition text-left"
+                  >
+                    <Code2 size={14} className="text-neutral-400 shrink-0" />
+                    <span>Edit sections</span>
+                  </button>
+                  <Link
+                    to="/admin/socials"
+                    role="menuitem"
+                    onClick={() => setMoreMenuOpen(false)}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-neutral-800 transition text-left"
+                  >
+                    <Database size={14} className="text-neutral-400 shrink-0" />
+                    <span>Edit default theme content</span>
+                  </Link>
+                  <a
+                    href={themeId ? `/?previewThemeId=${themeId}` : '/'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    role="menuitem"
+                    onClick={() => setMoreMenuOpen(false)}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-neutral-800 transition text-left"
+                  >
+                    <Eye size={14} className="text-neutral-400 shrink-0" />
+                    <span>View</span>
+                  </a>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setMoreMenuOpen(false);
+                      setStatusMsg('Shortcuts: Esc closes menus');
+                      setTimeout(() => setStatusMsg(null), 3000);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-neutral-800 transition text-left"
+                  >
+                    <Keyboard size={14} className="text-neutral-400 shrink-0" />
+                    <span>Keyboard shortcuts</span>
+                  </button>
+                  <Link
+                    to="/admin/customize"
+                    role="menuitem"
+                    onClick={() => setMoreMenuOpen(false)}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-neutral-800 transition text-left"
+                  >
+                    <BookOpen size={14} className="text-neutral-400 shrink-0" />
+                    <span>Manage themes</span>
+                  </Link>
+                  <a
+                    href="mailto:diaz@tamdev.id?subject=Tamdev%20CMS%20Support"
+                    role="menuitem"
+                    onClick={() => setMoreMenuOpen(false)}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-neutral-800 transition text-left"
+                  >
+                    <HelpCircle size={14} className="text-neutral-400 shrink-0" />
+                    <span>Get support</span>
+                  </a>
+
+                  <div className="mt-1.5 pt-2 px-3.5 pb-1 border-t border-neutral-800">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-semibold text-white truncate">{themeName}</span>
+                      <span className="text-[11px] text-neutral-500">v1.2</span>
+                    </div>
+                    <div className="text-[11px] text-neutral-500 mt-0.5">
+                      Developed by Tamdev
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => persistSections(true)}
+              disabled={saving || publishing}
+              className="h-8 px-3 md:px-4 inline-flex items-center justify-center text-xs font-semibold rounded-lg bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50 transition"
+            >
+              {publishing ? 'Publishing...' : 'Publish'}
+            </button>
         </div>
       </header>
 
@@ -546,9 +728,26 @@ export default function CustomizeSite() {
       )}
 
       {/* Main Split-Screen Body */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="relative flex-1 flex overflow-hidden">
+        {/* Mobile backdrop when sidebar open */}
+        <div
+          className={`absolute inset-0 bg-black/50 z-20 md:hidden transition-opacity duration-300 ease-out ${
+            sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+
         {/* Left Sidebar */}
-        <aside className="w-80 shrink-0 border-r border-neutral-800 bg-neutral-900 flex flex-col overflow-y-auto">
+        <aside
+          aria-hidden={!sidebarOpen}
+          className={`absolute inset-y-0 left-0 z-30 md:static md:z-auto shrink-0 bg-neutral-900 overflow-hidden transition-all duration-300 ease-out ${
+            sidebarOpen
+              ? 'w-80 max-w-[85vw] translate-x-0 opacity-100 border-r border-neutral-800 md:w-80'
+              : 'w-80 max-w-[85vw] -translate-x-full opacity-0 pointer-events-none border-r-0 md:w-0 md:translate-x-0'
+          }`}
+        >
+          <div className="w-80 max-w-[85vw] h-full flex flex-col overflow-y-auto">
           {sidebarView === 'list' && (
             <div className="p-4 space-y-5">
               {loading ? (
@@ -1092,13 +1291,14 @@ export default function CustomizeSite() {
               </div>
             );
           })()}
+          </div>
         </aside>
 
         {/* Right Live Preview Canvas (iframe for authentic responsive breakpoints) */}
         <main className="flex-1 bg-neutral-950 p-4 md:p-6 overflow-hidden flex justify-center items-stretch">
           <div
-            className={`h-full rounded-xl border border-neutral-800 shadow-2xl overflow-hidden bg-black transition-all duration-300 ${
-              previewMode === 'mobile' ? 'w-[390px] max-w-full' : 'w-full'
+            className={`h-full rounded-xl border border-neutral-800 shadow-2xl overflow-hidden bg-black transition-all duration-300 w-[390px] max-w-full ${
+              previewMode === 'mobile' ? 'md:w-[390px]' : 'md:w-full'
             }`}
           >
             <iframe
